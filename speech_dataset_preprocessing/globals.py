@@ -1,12 +1,10 @@
 
 # padding, used for unknown symbols and in training for no symbols
-PADDING_SYMBOL = "_"
+DEFAULT_PADDING_SYMBOL = "_"
 
-PADDING_ACCENT = "none"
+DEFAULT_CSV_SEPERATOR = "\t"
 
-CSV_SEPERATOR = "\t"
-
-PRE_CHUNK_SIZE = 500
+DEFAULT_PRE_CHUNK_SIZE = 500
 
 # end of string
 # EOS = '~'

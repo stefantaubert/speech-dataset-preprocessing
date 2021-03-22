@@ -11,7 +11,7 @@ from speech_dataset_preprocessing.app.wav import get_wav_dir, load_wav_csv
 from speech_dataset_preprocessing.core.ds import DsData
 from speech_dataset_preprocessing.core.plots import process
 from speech_dataset_preprocessing.core.wav import WavData
-from speech_dataset_preprocessing.globals import PRE_CHUNK_SIZE
+from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
 from speech_dataset_preprocessing.utils import (get_chunk_name, get_filepaths,
                                                 get_subdir, get_subfolders,
                                                 make_batches_h_v)
@@ -32,7 +32,7 @@ def get_plots_dir(ds_dir: str, mel_name: str, create: bool = False):
 
 def save_plot(dest_dir: str, data_len: int, wav_entry: WavData, ds_entry: DsData, mel_tensor: Tensor) -> str:
   chunk_dir = os.path.join(dest_dir, get_chunk_name(
-    wav_entry.entry_id, chunksize=PRE_CHUNK_SIZE, maximum=data_len - 1))
+    wav_entry.entry_id, chunksize=DEFAULT_PRE_CHUNK_SIZE, maximum=data_len - 1))
   os.makedirs(chunk_dir, exist_ok=True)
 
   plot_melspec(mel_tensor, title=f"{repr(wav_entry)}: {ds_entry.text}")

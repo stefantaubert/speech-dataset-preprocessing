@@ -11,7 +11,7 @@ from speech_dataset_parser import (download_arctic, download_libritts,
                                    parse_ljs, parse_mailabs, parse_thchs,
                                    parse_thchs_kaldi)
 from speech_dataset_parser.data import PreData, PreDataList
-from speech_dataset_preprocessing.globals import PADDING_SYMBOL
+from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
 from speech_dataset_preprocessing.utils import (GenericList,
                                    remove_duplicates_list_orderpreserving)
 from text_utils import (AccentsDict, Gender, IPAExtractionSettings, Language,
@@ -133,7 +133,7 @@ def _extract_symbols(l: PreDataList, logger: Logger) -> List[List[str]]:
   settings = IPAExtractionSettings(
     ignore_tones=False,
     ignore_arcs=False,
-    replace_unknown_ipa_by=PADDING_SYMBOL,
+    replace_unknown_ipa_by=DEFAULT_PADDING_SYMBOL,
   )
 
   res: List[List[str]] = []

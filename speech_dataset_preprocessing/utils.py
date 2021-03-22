@@ -16,10 +16,11 @@ import pandas as pd
 import wget
 from matplotlib.figure import Figure
 from scipy.spatial.distance import cosine
-from torch.optim.optimizer import Optimizer
+from torch.optim.optimizer import \
+    Optimizer  # pylint: disable=no-name-in-module
 from tqdm import tqdm
 
-from speech_dataset_preprocessing.globals import CSV_SEPERATOR
+from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
 
 _T = TypeVar('_T')
 PYTORCH_EXT = ".pt"
@@ -295,12 +296,12 @@ def try_load_df(path: str) -> Optional[pd.DataFrame]:
 
 
 def load_df(path: str) -> pd.DataFrame:
-  data = pd.read_csv(path, header=None, sep=CSV_SEPERATOR)
+  data = pd.read_csv(path, header=None, sep=DEFAULT_CSV_SEPERATOR)
   return data
 
 
 def save_df(dataframe: pd.DataFrame, path: str, header_columns: Optional[List[str]]):
-  dataframe.to_csv(path, header=header_columns, index=None, sep=CSV_SEPERATOR)
+  dataframe.to_csv(path, header=header_columns, index=None, sep=DEFAULT_CSV_SEPERATOR)
 
 
 def get_sorted_list_from_set(unsorted_set: Set[_T]) -> List[_T]:
@@ -373,19 +374,6 @@ def get_parent_dirname(filepath: str) -> str:
   return last_dir_name
 
 
-def get_chunk_name(i, chunksize, maximum) -> str:
-  assert i >= 0
-  assert chunksize > 0
-  assert maximum >= 0
-  start = i // chunksize
-  start *= chunksize
-  end = start + chunksize - 1
-  if end > maximum:
-    end = maximum
-  res = f"{start}-{end}"
-  return res
-
-
 def create_parent_folder(file: str) -> str:
   path = Path(file)
   os.makedirs(path.parent, exist_ok=True)
@@ -442,11 +430,6 @@ def parse_json(path: str) -> dict:
 def save_json(path: str, mapping_dict: Dict) -> None:
   with open(path, 'w', encoding='utf-8') as f:
     json.dump(mapping_dict, f, ensure_ascii=False, indent=2)
-
-
-def save_txt(path: str, text: str) -> None:
-  with open(path, 'w', encoding='utf-8') as f:
-    f.write(text)
 
 
 def read_lines(path: str) -> List[str]:

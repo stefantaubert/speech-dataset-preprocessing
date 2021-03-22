@@ -86,16 +86,3 @@ def remove_silence_plot(base_dir: str, ds_name: str, wav_name: str, chunk_size: 
   os.remove(trimmed)
 
   print(f"Saved result to: {resulting_path}")
-
-
-if __name__ == "__main__":
-  remove_silence_plot(
-    base_dir="/datasets/models/taco2pt_v5",
-    ds_name="thchs",
-    wav_name="16000kHz_normalized",
-    threshold_start=-20,
-    threshold_end=-30,
-    chunk_size=5,
-    buffer_start_ms=100,
-    buffer_end_ms=150
-  )

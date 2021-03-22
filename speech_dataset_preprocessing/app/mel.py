@@ -7,7 +7,7 @@ from speech_dataset_preprocessing.app.ds import get_ds_dir
 from speech_dataset_preprocessing.app.wav import get_wav_dir, load_wav_csv
 from speech_dataset_preprocessing.core.mel import MelData, MelDataList, process
 from speech_dataset_preprocessing.core.wav import WavData
-from speech_dataset_preprocessing.globals import PRE_CHUNK_SIZE
+from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
 from speech_dataset_preprocessing.utils import (get_chunk_name,
                                                 get_pytorch_filename,
                                                 get_subdir)
@@ -43,7 +43,7 @@ def save_mel(dest_dir: str, data_len: int, wav_entry: WavData, mel_tensor: Tenso
 
   chunk_dir_name = get_chunk_name(
     i=wav_entry.entry_id,
-    chunksize=PRE_CHUNK_SIZE,
+    chunksize=DEFAULT_PRE_CHUNK_SIZE,
     maximum=data_len - 1
   )
   relative_dest_wav_path = os.path.join(chunk_dir_name, get_pytorch_filename(repr(wav_entry)))

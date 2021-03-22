@@ -4,7 +4,7 @@ from logging import getLogger
 from typing import Optional
 
 from speech_dataset_preprocessing.app.ds import (get_ds_dir, load_ds_csv,
-                                                 load_symbols_json)
+                                                 load_ds_symbols_json)
 from speech_dataset_preprocessing.core.text import (SymbolsDict, TextData,
                                                     TextDataList,
                                                     convert_to_ipa, log_stats,
@@ -93,7 +93,7 @@ def preprocess_text(base_dir: str, ds_name: str, text_name: str):
     logger.error("Already exists.")
   else:
     data = load_ds_csv(ds_dir)
-    symbol_ids = load_symbols_json(ds_dir)
+    symbol_ids = load_ds_symbols_json(ds_dir)
     text_data, conv, all_symbols = preprocess(data, symbol_ids)
     os.makedirs(text_dir)
     save_text_csv(text_dir, text_data)

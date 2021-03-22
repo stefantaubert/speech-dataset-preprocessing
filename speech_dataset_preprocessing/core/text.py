@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import pandas as pd
 from numpy.core.fromnumeric import mean
 from speech_dataset_preprocessing.core.ds import DsDataList
-from speech_dataset_preprocessing.globals import PADDING_SYMBOL
+from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
 from speech_dataset_preprocessing.utils import GenericList, get_counter
 from text_utils import (AccentsDict, EngToIpaMode, Language, SymbolIdDict,
                         SymbolsDict, deserialize_list, serialize_list,
@@ -100,7 +100,7 @@ def convert_to_ipa(data: TextDataList, symbol_converter: SymbolIdDict, ignore_to
       ignore_arcs=ignore_arcs,
       ignore_tones=ignore_tones,
       mode=mode,
-      replace_unknown_with=PADDING_SYMBOL,
+      replace_unknown_with=DEFAULT_PADDING_SYMBOL,
       logger=logger,
     )
     processed_data.append((values.entry_id, new_symbols, new_accent_ids, Language.IPA))

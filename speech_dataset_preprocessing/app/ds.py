@@ -3,7 +3,6 @@ from logging import Logger, getLogger
 from shutil import copyfile
 from typing import Callable, Tuple
 
-from speech_dataset_preprocessing.app.io import get_pre_dir
 from speech_dataset_preprocessing.core.ds import (DsData, DsDataList,
                                                   arctic_preprocess,
                                                   custom_preprocess,
@@ -28,12 +27,8 @@ _ds_symbols_json = "symbols.json"
 _ds_accents_json = "accents.json"
 
 
-def _get_ds_root_dir(base_dir: str, create: bool = False):
-  return get_subdir(get_pre_dir(base_dir, create), "ds", create)
-
-
 def get_ds_dir(base_dir: str, ds_name: str, create: bool = False):
-  return get_subdir(_get_ds_root_dir(base_dir, create), ds_name, create)
+  return get_subdir(base_dir, ds_name, create)
 
 
 def get_ds_examples_dir(ds_dir: str, create: bool = False):
@@ -51,37 +46,37 @@ def _save_ds_csv(ds_dir: str, result: DsDataList):
   result.save(path)
 
 
-def load_symbols_json(ds_dir: str) -> SymbolIdDict:
+def load_ds_symbols_json(ds_dir: str) -> SymbolIdDict:
   path = os.path.join(ds_dir, _ds_symbols_json)
   return SymbolIdDict.load_from_file(path)
 
 
-def _save_symbols_json(ds_dir: str, data: SymbolIdDict):
+def _save_ds_symbols_json(ds_dir: str, data: SymbolIdDict):
   path = os.path.join(ds_dir, _ds_symbols_json)
   data.save(path)
 
 
-def load_accents_json(ds_dir: str) -> AccentsDict:
+def load_ds_accents_json(ds_dir: str) -> AccentsDict:
   path = os.path.join(ds_dir, _ds_accents_json)
   return AccentsDict.load(path)
 
 
-def _save_accents_json(ds_dir: str, data: AccentsDict):
+def _save_ds_accents_json(ds_dir: str, data: AccentsDict):
   path = os.path.join(ds_dir, _ds_accents_json)
   data.save(path)
 
 
-def load_speaker_json(ds_dir: str) -> SpeakersDict:
+def load_ds_speaker_json(ds_dir: str) -> SpeakersDict:
   path = os.path.join(ds_dir, _ds_speakers_json)
   return SpeakersDict.load(path)
 
 
-def _save_speaker_json(ds_dir: str, speakers: SpeakersDict):
+def _save_ds_speaker_json(ds_dir: str, speakers: SpeakersDict):
   path = os.path.join(ds_dir, _ds_speakers_json)
   speakers.save(path)
 
 
-def _save_speaker_log_json(ds_dir: str, speakers_log: SpeakersLogDict):
+def _save_ds_speaker_log_json(ds_dir: str, speakers_log: SpeakersLogDict):
   path = os.path.join(ds_dir, "speakers_log.json")
   speakers_log.save(path)
 
@@ -145,10 +140,10 @@ def _preprocess_ds(base_dir: str, ds_name: str, path: str, auto_dl: bool, prepro
     logger.info("Reading data...")
     speakers, speakers_log, symbols, accents, ds_data = preprocess_func(path, auto_dl, logger)
     os.makedirs(ds_dir)
-    _save_speaker_json(ds_dir, speakers)
-    _save_speaker_log_json(ds_dir, speakers_log)
-    _save_symbols_json(ds_dir, symbols)
-    _save_accents_json(ds_dir, accents)
+    _save_ds_speaker_json(ds_dir, speakers)
+    _save_ds_speaker_log_json(ds_dir, speakers_log)
+    _save_ds_symbols_json(ds_dir, symbols)
+    _save_ds_accents_json(ds_dir, accents)
     _save_ds_csv(ds_dir, ds_data)
     examples = get_speaker_examples(ds_data)
     _save_speaker_examples(ds_dir, examples, logger)

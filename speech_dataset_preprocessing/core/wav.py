@@ -14,7 +14,7 @@ from audio_utils.mel import TacotronSTFT, TSTFTHParams
 from numpy.core.fromnumeric import mean
 from scipy.io.wavfile import read, write
 from speech_dataset_preprocessing.core.ds import DsDataList
-from speech_dataset_preprocessing.globals import PRE_CHUNK_SIZE
+from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
 from speech_dataset_preprocessing.utils import GenericList, get_chunk_name
 
 
@@ -107,7 +107,7 @@ def preprocess(data: DsDataList, dest_dir: str) -> WavDataList:
 
     chunk_dir_name = get_chunk_name(
       i=values.entry_id,
-      chunksize=PRE_CHUNK_SIZE,
+      chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
     absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
@@ -128,7 +128,7 @@ def resample(data: WavDataList, orig_dir: str, dest_dir: str, new_rate: int) -> 
   for values in data.items(True):
     chunk_dir_name = get_chunk_name(
       i=values.entry_id,
-      chunksize=PRE_CHUNK_SIZE,
+      chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
     absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
@@ -151,7 +151,7 @@ def stereo_to_mono(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataLi
   for values in data.items(True):
     chunk_dir_name = get_chunk_name(
       i=values.entry_id,
-      chunksize=PRE_CHUNK_SIZE,
+      chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
     absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
@@ -175,7 +175,7 @@ def remove_silence(data: WavDataList, orig_dir: str, dest_dir: str, chunk_size: 
   for values in data.items(True):
     chunk_dir_name = get_chunk_name(
       i=values.entry_id,
-      chunksize=PRE_CHUNK_SIZE,
+      chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
     absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
@@ -229,7 +229,7 @@ def normalize(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataList:
   for values in data.items(True):
     chunk_dir_name = get_chunk_name(
       i=values.entry_id,
-      chunksize=PRE_CHUNK_SIZE,
+      chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
     absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
