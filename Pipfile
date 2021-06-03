@@ -18,11 +18,11 @@ tqdm = "*"
 numpy = "*"
 Unidecode = "*"
 torch = "==1.7.1"
-cmudict-parser = {editable = true, ref = "master", git = "https://github.com/stefantaubert/cmudict-parser.git"}
-speech-dataset-parser = {editable = true, ref = "master", git = "https://github.com/stefantaubert/speech-dataset-parser.git"}
-text-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/text-utils.git"}
-audio-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/audio-utils.git"}
-image-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/image-utils.git"}
+text-utils = {editable = true, path = "./../text-utils"}
+cmudict-parser = {editable = true, path = "./../cmudict-parser"}
+speech-dataset-parser = {editable = true, path = "./../speech-dataset-parser"}
+audio-utils = {editable = true, path = "./../audio-utils"}
+image-utils = {editable = true, path = "./../image-utils"}
 
 [requires]
 python_version = "3.8"
