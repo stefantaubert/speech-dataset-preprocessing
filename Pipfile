@@ -18,7 +18,6 @@ tqdm = "*"
 numpy = "*"
 Unidecode = "*"
 torch = "==1.7.1"
-cmudict-parser = {editable = true, ref = "master", git = "https://github.com/stefantaubert/cmudict-parser.git"}
 speech-dataset-parser = {editable = true, ref = "master", git = "https://github.com/stefantaubert/speech-dataset-parser.git"}
 text-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/text-utils.git"}
 audio-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/audio-utils.git"}
