@@ -49,7 +49,8 @@ class UnitTests(unittest.TestCase):
     symbol_ids = SymbolIdDict.init_from_symbols({" ", "b", "c"})
 
     result, conv, symbols_dict = convert_to_ipa(
-      data, symbol_ids, ignore_tones=False, ignore_arcs=False, mode=None, logger=getLogger())
+      data, symbol_ids, ignore_tones=False, ignore_arcs=False,
+      consider_ipa_annotations=False, mode=None, logger=getLogger())
 
     self.assertEqual(2, len(conv))
     self.assertEqual(1, len(result))
