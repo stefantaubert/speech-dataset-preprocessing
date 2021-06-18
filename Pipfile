@@ -10,6 +10,7 @@ pycodestyle = "*"
 isort = "*"
 pipenv-setup = "*"
 rope = "*"
+speech-dataset-preprocessing = {editable = true, path = "."}
 
 [packages]
 pandas = "*"
