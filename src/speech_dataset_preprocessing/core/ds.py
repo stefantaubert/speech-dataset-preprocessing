@@ -11,9 +11,8 @@ from speech_dataset_parser import (download_arctic, download_libritts,
                                    parse_ljs, parse_mailabs, parse_thchs,
                                    parse_thchs_kaldi)
 from speech_dataset_parser.data import PreData, PreDataList
-from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
-from speech_dataset_preprocessing.utils import (GenericList,
-                                   remove_duplicates_list_orderpreserving)
+from speech_dataset_preprocessing.utils import (
+    GenericList, remove_duplicates_list_orderpreserving)
 from text_utils import (AccentsDict, Gender, IPAExtractionSettings, Language,
                         SpeakersDict, SpeakersLogDict, SymbolIdDict,
                         text_to_symbols)
@@ -47,7 +46,7 @@ class DsDataList(GenericList[DsData]):
       item.load_init()
 
 
-def _preprocess_core(dir_path: str, auto_dl: bool, dl_func: Optional[Callable[[str], None]], parse_func: Callable[[str], PreDataList], logger: Logger) -> Tuple[
+def _preprocess_core(dir_path: str, auto_dl: bool, ignore_tones: Optional[bool], ignore_arcs: Optional[bool], replace_unknown_ipa_by: Optional[str], dl_func: Optional[Callable[[str], None]], parse_func: Callable[[str], PreDataList], logger: Logger) -> Tuple[
         SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
   if not os.path.isdir(dir_path) and auto_dl and dl_func is not None:
     dl_func(dir_path)
@@ -55,8 +54,12 @@ def _preprocess_core(dir_path: str, auto_dl: bool, dl_func: Optional[Callable[[s
   data = parse_func(dir_path)
   speakers, speakers_log = _get_all_speakers(data)
   accents = _get_all_accents(data)
-
-  text_symbols = _extract_symbols(data, logger)
+  ipa_settings = IPAExtractionSettings(
+    ignore_tones=ignore_tones,
+    ignore_arcs=ignore_arcs,
+    replace_unknown_ipa_by=replace_unknown_ipa_by,
+  )
+  text_symbols = _extract_symbols(data, ipa_settings=ipa_settings, logger=logger)
   symbols = _get_symbols_id_dict(text_symbols)
 
   ds_data = DsDataList([get_dsdata_from_predata(
@@ -83,36 +86,99 @@ def get_speaker_examples(data: DsDataList) -> DsDataList:
 
 def thchs_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
         SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_thchs, parse_thchs, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=auto_dl,
+    ignore_tones=None,
+    ignore_arcs=None,
+    replace_unknown_ipa_by=None,
+    dl_func=download_thchs,
+    parse_func=parse_thchs,
+    logger=logger,
+  )
 
 
-def custom_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
+def custom_preprocess(dir_path: str, ignore_tones: Optional[bool], ignore_arcs: Optional[bool], replace_unknown_ipa_by: Optional[str], logger: Logger) -> Tuple[
   SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, None, parse_custom, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=False,
+    ignore_tones=ignore_tones,
+    ignore_arcs=ignore_arcs,
+    replace_unknown_ipa_by=replace_unknown_ipa_by,
+    dl_func=None,
+    parse_func=parse_custom,
+    logger=logger,
+  )
 
 
 def libritts_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
   SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_libritts, parse_libritts, logger)
+  return _preprocess_core(
+      dir_path=dir_path,
+      auto_dl=auto_dl,
+      ignore_tones=None,
+      ignore_arcs=None,
+      replace_unknown_ipa_by=None,
+      dl_func=download_libritts,
+      parse_func=parse_libritts,
+      logger=logger,
+  )
 
 
 def arctic_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
   SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_arctic, parse_arctic, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=auto_dl,
+    ignore_tones=None,
+    ignore_arcs=None,
+    replace_unknown_ipa_by=None,
+    dl_func=download_arctic,
+    parse_func=parse_arctic,
+    logger=logger,
+  )
 
 
 def ljs_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
   SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_ljs, parse_ljs, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=auto_dl,
+    ignore_tones=None,
+    ignore_arcs=None,
+    replace_unknown_ipa_by=None,
+    dl_func=download_ljs,
+    parse_func=parse_ljs,
+    logger=logger,
+  )
 
 
 def mailabs_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[
   SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_mailabs, parse_mailabs, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=auto_dl,
+    ignore_tones=None,
+    ignore_arcs=None,
+    replace_unknown_ipa_by=None,
+    dl_func=download_mailabs,
+    parse_func=parse_mailabs,
+    logger=logger,
+  )
 
 
 def thchs_kaldi_preprocess(dir_path: str, auto_dl: bool, logger: Logger) -> Tuple[SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]:
-  return _preprocess_core(dir_path, auto_dl, download_thchs_kaldi, parse_thchs_kaldi, logger)
+  return _preprocess_core(
+    dir_path=dir_path,
+    auto_dl=auto_dl,
+    ignore_tones=None,
+    ignore_arcs=None,
+    replace_unknown_ipa_by=None,
+    dl_func=download_thchs_kaldi,
+    parse_func=parse_thchs_kaldi,
+    logger=logger,
+  )
 
 
 def _get_all_speakers(l: PreDataList) -> Tuple[SpeakersDict, SpeakersLogDict]:
@@ -129,20 +195,14 @@ def _get_all_accents(l: PreDataList) -> AccentsDict:
   return AccentsDict.init_from_accents(accents)
 
 
-def _extract_symbols(l: PreDataList, logger: Logger) -> List[List[str]]:
-  settings = IPAExtractionSettings(
-    ignore_tones=False,
-    ignore_arcs=False,
-    replace_unknown_ipa_by=DEFAULT_PADDING_SYMBOL,
-  )
-
+def _extract_symbols(l: PreDataList, ipa_settings: Optional[IPAExtractionSettings], logger: Logger) -> List[List[str]]:
   res: List[List[str]] = []
   for x in l.items():
     text_symbols = text_to_symbols(
       text=x.text,
       lang=x.lang,
-      ipa_settings=settings,
-      logger=logger
+      ipa_settings=ipa_settings,
+      logger=logger,
     )
     res.append(text_symbols)
   return res

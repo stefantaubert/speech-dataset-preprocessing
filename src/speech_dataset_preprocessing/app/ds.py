@@ -1,7 +1,9 @@
 import os
-from logging import Logger, getLogger
-from shutil import copyfile
-from typing import Callable, Tuple
+import shutil
+from functools import partial
+from logging import Logger, getLogger, shutdown
+from shutil import copyfile, rmtree
+from typing import Callable, Optional, Tuple
 
 from speech_dataset_preprocessing.core.ds import (DsData, DsDataList,
                                                   arctic_preprocess,
@@ -89,56 +91,74 @@ def _save_speaker_examples(ds_dir: str, examples: DsDataList, logger: Logger) ->
     copyfile(example.wav_path, dest_path)
 
 
-def preprocess_thchs(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_thchs(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing THCHS-30 dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, thchs_preprocess, logger=logger)
+  preprocess_func = partial(thchs_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def preprocess_thchs_kaldi(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_thchs_kaldi(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing THCHS-30 (Kaldi-Version) dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, thchs_kaldi_preprocess, logger=logger)
+  preprocess_func = partial(thchs_kaldi_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def preprocess_ljs(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_ljs(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing LJSpeech dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, ljs_preprocess, logger=logger)
+  preprocess_func = partial(ljs_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def preprocess_mailabs(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_mailabs(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing M-AILABS dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, mailabs_preprocess, logger=logger)
+  preprocess_func = partial(mailabs_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def preprocess_libritts(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_libritts(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing LibriTTS dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, libritts_preprocess, logger=logger)
+  preprocess_func = partial(libritts_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def preprocess_custom(base_dir: str, ds_name: str, path: str, auto_dl: bool):
-  logger = getLogger(__name__)
-  logger.info("Preprocessing custom dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, custom_preprocess, logger=logger)
-
-
-def preprocess_arctic(base_dir: str, ds_name: str, path: str, auto_dl: bool):
+def preprocess_arctic(base_dir: str, ds_name: str, path: str, auto_dl: bool, overwrite: bool):
   logger = getLogger(__name__)
   logger.info("Preprocessing L2 Arctic dataset...")
-  _preprocess_ds(base_dir, ds_name, path, auto_dl, arctic_preprocess, logger=logger)
+  preprocess_func = partial(arctic_preprocess, dir_path=path, auto_dl=auto_dl, logger=logger)
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
 
 
-def _preprocess_ds(base_dir: str, ds_name: str, path: str, auto_dl: bool, preprocess_func: Callable[[str, bool, Logger], Tuple[
-  SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]], logger: Logger):
+def preprocess_custom(base_dir: str, ds_name: str, path: str, ignore_tones: Optional[bool], ignore_arcs: Optional[bool], replace_unknown_ipa_by: Optional[str], overwrite: bool):
+  logger = getLogger(__name__)
+  logger.info("Preprocessing custom dataset...")
+  preprocess_func = partial(custom_preprocess,
+                            dir_path=path,
+                            ignore_tones=ignore_tones,
+                            ignore_arcs=ignore_arcs,
+                            replace_unknown_ipa_by=replace_unknown_ipa_by,
+                            logger=logger
+                            )
+  _preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite, logger=logger)
+
+
+def _preprocess_ds(base_dir: str, ds_name: str, preprocess_func: Callable[[], Tuple[
+  SpeakersDict, SpeakersLogDict, DsDataList, SymbolIdDict, AccentsDict]], overwrite: bool, logger: Logger):
   ds_dir = get_ds_dir(base_dir, ds_name, create=False)
-  if os.path.isdir(ds_dir):
+  if os.path.isdir(ds_dir) and not overwrite:
     logger.info("Dataset already processed.")
+    return
   else:
     logger.info("Reading data...")
-    speakers, speakers_log, symbols, accents, ds_data = preprocess_func(path, auto_dl, logger)
+    speakers, speakers_log, symbols, accents, ds_data = preprocess_func()
+    if os.path.isdir(ds_dir):
+      assert overwrite
+      logger.info("Overwriting existing data.")
+      rmtree(ds_dir)
     os.makedirs(ds_dir)
     _save_ds_speaker_json(ds_dir, speakers)
     _save_ds_speaker_log_json(ds_dir, speakers_log)

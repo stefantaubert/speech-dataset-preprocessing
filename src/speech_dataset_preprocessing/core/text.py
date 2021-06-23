@@ -85,7 +85,7 @@ def log_stats(ds_data: DsDataList, text_data: TextDataList, logger: Logger):
     print(stats_csv)
 
 
-def convert_to_ipa(data: TextDataList, symbol_converter: SymbolIdDict, ignore_tones: bool, ignore_arcs: bool, mode: Optional[EngToIpaMode], consider_ipa_annotations: bool, logger: Logger) -> Tuple[TextDataList, SymbolIdDict, SymbolsDict]:
+def convert_to_ipa(data: TextDataList, symbol_converter: SymbolIdDict, ignore_tones: bool, ignore_arcs: bool, mode: Optional[EngToIpaMode], consider_ipa_annotations: bool, replace_unknown_with: str, logger: Logger) -> Tuple[TextDataList, SymbolIdDict, SymbolsDict]:
   processed_data: List[Tuple[int, List[str], List[int], Language]] = []
 
   for values in data.items(True):
@@ -100,7 +100,7 @@ def convert_to_ipa(data: TextDataList, symbol_converter: SymbolIdDict, ignore_to
       ignore_arcs=ignore_arcs,
       ignore_tones=ignore_tones,
       mode=mode,
-      replace_unknown_with=DEFAULT_PADDING_SYMBOL,
+      replace_unknown_with=replace_unknown_with,
       consider_ipa_annotations=consider_ipa_annotations,
       logger=logger,
     )

@@ -9,6 +9,7 @@ from speech_dataset_preprocessing.core.text import (SymbolsDict, TextData,
                                                     TextDataList,
                                                     convert_to_ipa, log_stats,
                                                     normalize, preprocess)
+from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
 from speech_dataset_preprocessing.utils import get_subdir, save_txt
 from text_utils import EngToIpaMode, SymbolIdDict
 
@@ -131,7 +132,7 @@ def text_normalize(base_dir: str, ds_name: str, orig_text_name: str, dest_text_n
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
 
 
-def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, consider_ipa_annotations: bool = False, mode: Optional[EngToIpaMode] = None):
+def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, replace_unknown_with: str = DEFAULT_PADDING_SYMBOL, consider_ipa_annotations: bool = False, mode: Optional[EngToIpaMode] = None):
   logger = getLogger(__name__)
   logger.info("Converting text to IPA...")
   operation = partial(
@@ -139,6 +140,7 @@ def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_t
     ignore_tones=ignore_tones,
     ignore_arcs=ignore_arcs,
     mode=mode,
+    replace_unknown_with=replace_unknown_with,
     consider_ipa_annotations=consider_ipa_annotations,
     logger=logger
   )
