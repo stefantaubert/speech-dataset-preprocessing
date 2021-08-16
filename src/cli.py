@@ -135,6 +135,7 @@ def init_text_convert_to_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--dest_text_name', type=str, required=True)
   parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--ignore_arcs', action='store_true')
+  parser.add_argument('--merge_stress', action='store_true')
   parser.add_argument('--consider_ipa_annotations', action='store_true')
   parser.add_argument('--mode', choices=EngToIpaMode,
                       type=EngToIpaMode.__getitem__)

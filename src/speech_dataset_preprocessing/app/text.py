@@ -132,7 +132,7 @@ def text_normalize(base_dir: str, ds_name: str, orig_text_name: str, dest_text_n
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
 
 
-def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, replace_unknown_with: str = DEFAULT_PADDING_SYMBOL, consider_ipa_annotations: bool = False, mode: Optional[EngToIpaMode] = None):
+def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, merge_stress: bool = True, replace_unknown_with: str = DEFAULT_PADDING_SYMBOL, consider_ipa_annotations: bool = False, mode: Optional[EngToIpaMode] = None):
   logger = getLogger(__name__)
   logger.info("Converting text to IPA...")
   operation = partial(
@@ -142,6 +142,7 @@ def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_t
     mode=mode,
     replace_unknown_with=replace_unknown_with,
     consider_ipa_annotations=consider_ipa_annotations,
-    logger=logger
+    logger=logger,
+    merge_stress=merge_stress,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
