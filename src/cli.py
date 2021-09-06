@@ -2,7 +2,7 @@ import os
 from argparse import ArgumentParser
 from typing import Dict, Optional
 
-from text_utils import EngToIpaMode
+from text_utils import EngToIPAMode
 
 from speech_dataset_preprocessing.app.ds import (preprocess_arctic,
                                                  preprocess_custom,
@@ -22,7 +22,6 @@ from speech_dataset_preprocessing.app.wav import (preprocess_wavs,
                                                   wavs_remove_silence,
                                                   wavs_resample, wavs_stats,
                                                   wavs_stereo_to_mono)
-from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
 
 
 def split_hparams_string(hparams: Optional[str]) -> Optional[Dict[str, str]]:
@@ -85,9 +84,6 @@ def init_preprocess_thchs_kaldi_parser(parser: ArgumentParser):
 def init_preprocess_custom_parser(parser: ArgumentParser):
   parser.add_argument('--path', type=str, required=True, help='Custom dataset directory')
   parser.add_argument('--ds_name', type=str, required=True, default='custom')
-  parser.add_argument("--ignore_tones", action="store_true")
-  parser.add_argument("--ignore_arcs", action="store_true")
-  parser.add_argument("--replace_unknown_ipa_by", type=str, default=DEFAULT_PADDING_SYMBOL)
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_custom
 
@@ -135,12 +131,10 @@ def init_text_convert_to_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--dest_text_name', type=str, required=True)
   parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--ignore_arcs', action='store_true')
-  parser.add_argument('--merge_stress', action='store_true')
+  parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--consider_ipa_annotations', action='store_true')
-  parser.add_argument('--mode', choices=EngToIpaMode,
-                      type=EngToIpaMode.__getitem__)
-  parser.add_argument("--replace_unknown_with", type=str, default=DEFAULT_PADDING_SYMBOL,
-                      help="Symbol which should be used for replacing words for which IPA conversion does not exist.")
+  parser.add_argument('--mode', choices=EngToIPAMode,
+                      type=EngToIPAMode.__getitem__)
   return text_convert_to_ipa
 
 

@@ -1,7 +1,7 @@
 import os
 from functools import partial
 from logging import getLogger
-from typing import Optional
+from typing import Callable, Tuple
 
 from speech_dataset_preprocessing.app.ds import (get_ds_dir, load_ds_csv,
                                                  load_ds_symbols_json)
@@ -9,9 +9,8 @@ from speech_dataset_preprocessing.core.text import (SymbolsDict, TextData,
                                                     TextDataList,
                                                     convert_to_ipa, log_stats,
                                                     normalize, preprocess)
-from speech_dataset_preprocessing.globals import DEFAULT_PADDING_SYMBOL
 from speech_dataset_preprocessing.utils import get_subdir, save_txt
-from text_utils import EngToIpaMode, SymbolIdDict
+from text_utils import EngToIPAMode, SymbolIdDict
 
 _text_data_csv = "data.csv"
 _text_symbols_json = "symbols.json"
@@ -71,7 +70,7 @@ def text_stats(base_dir: str, ds_name: str, text_name: str):
   if os.path.isdir(text_dir):
     ds_data = load_ds_csv(ds_dir)
     text_data = load_text_csv(text_dir)
-    log_stats(ds_data, text_data, logger)
+    log_stats(ds_data, text_data)
 
 
 def export_text(base_dir: str, ds_name: str, text_name: str):
@@ -102,7 +101,7 @@ def preprocess_text(base_dir: str, ds_name: str, text_name: str):
     save_text_symbols_json(text_dir, all_symbols)
 
 
-def _text_op(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, operation):
+def _text_op(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, operation: Callable[[TextDataList, SymbolIdDict], Tuple[TextDataList, SymbolIdDict, SymbolsDict]]):
   logger = getLogger(__name__)
   ds_dir = get_ds_dir(base_dir, ds_name)
   orig_text_dir = get_text_dir(ds_dir, orig_text_name)
@@ -125,24 +124,19 @@ def _text_op(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: s
 def text_normalize(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str):
   logger = getLogger(__name__)
   logger.info("Normalizing text...")
-  operation = partial(
-    normalize,
-    logger=logger,
-  )
+  operation = partial(normalize)
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
 
 
-def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, merge_stress: bool = True, replace_unknown_with: str = DEFAULT_PADDING_SYMBOL, consider_ipa_annotations: bool = False, mode: Optional[EngToIpaMode] = None):
+def text_convert_to_ipa(base_dir: str, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, ignore_stress: bool = False, consider_ipa_annotations: bool = False, mode: EngToIPAMode = EngToIPAMode.EPITRAN):
   logger = getLogger(__name__)
   logger.info("Converting text to IPA...")
   operation = partial(
     convert_to_ipa,
     ignore_tones=ignore_tones,
     ignore_arcs=ignore_arcs,
+    ignore_stress=ignore_stress,
     mode=mode,
-    replace_unknown_with=replace_unknown_with,
     consider_ipa_annotations=consider_ipa_annotations,
-    logger=logger,
-    merge_stress=merge_stress,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)

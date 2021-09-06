@@ -1,5 +1,4 @@
 from speech_dataset_preprocessing.app.ds import (get_ds_dir,
-                                                 load_ds_accents_json,
                                                  load_ds_csv,
                                                  load_ds_speaker_json,
                                                  load_ds_symbols_json)

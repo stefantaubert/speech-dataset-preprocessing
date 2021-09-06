@@ -4,7 +4,7 @@ output: mel data
 """
 import os
 from logging import getLogger
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from audio_utils.mel import TacotronSTFT, TSTFTHParams
 from speech_dataset_preprocessing.core.ds import DsData, DsDataList

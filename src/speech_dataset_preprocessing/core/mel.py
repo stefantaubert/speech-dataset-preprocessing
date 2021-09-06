@@ -5,7 +5,7 @@ output: mel data
 import os
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Optional
 
 from audio_utils.mel import TacotronSTFT, TSTFTHParams
 from speech_dataset_preprocessing.core.wav import WavData, WavDataList
