@@ -2,9 +2,9 @@
 calculate wav duration and sampling rate
 """
 
-import os
 from dataclasses import dataclass
-from logging import Logger, getLogger
+from logging import getLogger
+from pathlib import Path
 from typing import Dict, List
 
 import pandas as pd
@@ -16,12 +16,13 @@ from scipy.io.wavfile import read, write
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
 from speech_dataset_preprocessing.utils import GenericList, get_chunk_name
+from text_utils.types import Speaker
 
 
 @dataclass()
 class WavData:
   entry_id: int
-  relative_wav_path: str
+  relative_wav_path: Path
   duration: float
   sr: int
   #size: float
@@ -39,7 +40,8 @@ class WavDataList(GenericList[WavData]):
     raise Exception(f"Entry {entry_id} not found.")
 
 
-def log_stats(ds_data: DsDataList, wav_data: WavDataList, logger: Logger):
+def log_stats(ds_data: DsDataList, wav_data: WavDataList):
+  logger = getLogger(__name__)
   if len(wav_data) > 0:
     logger.info(f"Sampling rate: {wav_data.items()[0].sr}")
   stats: List[str, int, float, float, float, int] = []
@@ -54,22 +56,14 @@ def log_stats(ds_data: DsDataList, wav_data: WavDataList, logger: Logger):
     sum(durations) / 60,
     sum(durations) / 3600,
   ))
-  # logger.info("TOTAL")
-  # logger.info(f"Count of entries: {len(wav_data)}")
-  # logger.info(f"Minimum duration: {min_duration:.2f}s")
-  # logger.info(f"Maximum duration: {max_duration:.2f}s")
-  # logger.info(f"Average duration: {avg_duration:.2f}s")
-  # logger.info("")
-  speaker_durations: List[int, List[float]] = {}
-  speaker_names: Dict[int, str] = {}
+  speaker_durations: Dict[Speaker, List[float]] = {}
   for ds_entry, wav_entry in zip(ds_data.items(), wav_data.items()):
-    if ds_entry.speaker_id not in speaker_durations:
-      speaker_durations[ds_entry.speaker_id] = []
-      speaker_names[ds_entry.speaker_id] = ds_entry.speaker_name
-    speaker_durations[ds_entry.speaker_id].append(wav_entry.duration)
-  for k, speaker_durations in speaker_durations.items():
+    if ds_entry.speaker_name not in speaker_durations:
+      speaker_durations[ds_entry.speaker_name] = []
+    speaker_durations[ds_entry.speaker_name].append(wav_entry.duration)
+  for speaker_name, speaker_durations in speaker_durations.items():
     stats.append((
-      f"{speaker_names[k]} ({k})",
+      speaker_name,
       len(speaker_durations),
       min(speaker_durations),
       max(speaker_durations),
@@ -94,11 +88,11 @@ def log_stats(ds_data: DsDataList, wav_data: WavDataList, logger: Logger):
     'display.max_columns', None,
     'display.width', None,
     'display.precision', 4,
-  ):  # more options can be specified also
-    print(stats_csv)
+  ):
+    logger.info(stats_csv)
 
 
-def preprocess(data: DsDataList, dest_dir: str) -> WavDataList:
+def preprocess(data: DsDataList, dest_dir: Path) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
@@ -110,10 +104,10 @@ def preprocess(data: DsDataList, dest_dir: str) -> WavDataList:
       chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
-    absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
-    os.makedirs(absolute_chunk_dir, exist_ok=True)
-    relative_dest_wav_path = os.path.join(chunk_dir_name, f"{values!r}.wav")
-    absolute_dest_wav_path = os.path.join(dest_dir, relative_dest_wav_path)
+    absolute_chunk_dir = dest_dir / chunk_dir_name
+    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
     write(absolute_dest_wav_path, sampling_rate, wav)
 
     wav_data = WavData(values.entry_id, relative_dest_wav_path, duration, sampling_rate)
@@ -122,7 +116,7 @@ def preprocess(data: DsDataList, dest_dir: str) -> WavDataList:
   return result
 
 
-def resample(data: WavDataList, orig_dir: str, dest_dir: str, new_rate: int) -> WavDataList:
+def resample(data: WavDataList, orig_dir: Path, dest_dir: Path, new_rate: int) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
@@ -131,13 +125,13 @@ def resample(data: WavDataList, orig_dir: str, dest_dir: str, new_rate: int) -> 
       chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
-    absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
-    os.makedirs(absolute_chunk_dir, exist_ok=True)
-    relative_dest_wav_path = os.path.join(chunk_dir_name, f"{values!r}.wav")
-    absolute_dest_wav_path = os.path.join(dest_dir, relative_dest_wav_path)
+    absolute_chunk_dir = dest_dir / chunk_dir_name
+    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-    # todo assert not is_overamp
-    absolute_orig_wav_path = os.path.join(orig_dir, values.relative_wav_path)
+    # TODO assert not is_overamp
+    absolute_orig_wav_path = orig_dir / values.relative_wav_path
     upsample_file(absolute_orig_wav_path, absolute_dest_wav_path, new_rate)
     wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, new_rate)
     result.append(wav_data)
@@ -145,7 +139,7 @@ def resample(data: WavDataList, orig_dir: str, dest_dir: str, new_rate: int) -> 
   return result
 
 
-def stereo_to_mono(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataList:
+def stereo_to_mono(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
@@ -154,13 +148,13 @@ def stereo_to_mono(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataLi
       chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
-    absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
-    os.makedirs(absolute_chunk_dir, exist_ok=True)
-    relative_dest_wav_path = os.path.join(chunk_dir_name, f"{values!r}.wav")
-    absolute_dest_wav_path = os.path.join(dest_dir, relative_dest_wav_path)
+    absolute_chunk_dir = dest_dir / chunk_dir_name
+    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     # todo assert not is_overamp
-    absolute_orig_wav_path = os.path.join(orig_dir, values.relative_wav_path)
+    absolute_orig_wav_path = orig_dir / values.relative_wav_path
     stereo_to_mono_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
     wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, values.sr)
@@ -169,7 +163,7 @@ def stereo_to_mono(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataLi
   return result
 
 
-def remove_silence(data: WavDataList, orig_dir: str, dest_dir: str, chunk_size: int, threshold_start: float, threshold_end: float, buffer_start_ms: float, buffer_end_ms: float) -> WavDataList:
+def remove_silence(data: WavDataList, orig_dir: Path, dest_dir: Path, chunk_size: int, threshold_start: float, threshold_end: float, buffer_start_ms: float, buffer_end_ms: float) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
@@ -178,12 +172,12 @@ def remove_silence(data: WavDataList, orig_dir: str, dest_dir: str, chunk_size: 
       chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
-    absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
-    os.makedirs(absolute_chunk_dir, exist_ok=True)
-    relative_dest_wav_path = os.path.join(chunk_dir_name, f"{values!r}.wav")
-    absolute_dest_wav_path = os.path.join(dest_dir, relative_dest_wav_path)
+    absolute_chunk_dir = dest_dir / chunk_dir_name
+    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-    absolute_orig_wav_path = os.path.join(orig_dir, values.relative_wav_path)
+    absolute_orig_wav_path = orig_dir / values.relative_wav_path
     new_duration = remove_silence_file(
       in_path=absolute_orig_wav_path,
       out_path=absolute_dest_wav_path,
@@ -200,7 +194,7 @@ def remove_silence(data: WavDataList, orig_dir: str, dest_dir: str, chunk_size: 
   return result
 
 
-def remove_silence_plot(wav_path: str, out_path: str, chunk_size: int, threshold_start: float, threshold_end: float, buffer_start_ms: float, buffer_end_ms: float):
+def remove_silence_plot(wav_path: Path, out_path: Path, chunk_size: int, threshold_start: float, threshold_end: float, buffer_start_ms: float, buffer_end_ms: float):
   remove_silence_file(
     in_path=wav_path,
     out_path=out_path,
@@ -223,7 +217,7 @@ def remove_silence_plot(wav_path: str, out_path: str, chunk_size: int, threshold
   return mel_orig, mel_trimmed
 
 
-def normalize(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataList:
+def normalize(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
@@ -232,12 +226,12 @@ def normalize(data: WavDataList, orig_dir: str, dest_dir: str) -> WavDataList:
       chunksize=DEFAULT_PRE_CHUNK_SIZE,
       maximum=len(data) - 1
     )
-    absolute_chunk_dir = os.path.join(dest_dir, chunk_dir_name)
-    os.makedirs(absolute_chunk_dir, exist_ok=True)
-    relative_dest_wav_path = os.path.join(chunk_dir_name, f"{values!r}.wav")
-    absolute_dest_wav_path = os.path.join(dest_dir, relative_dest_wav_path)
+    absolute_chunk_dir = dest_dir / chunk_dir_name
+    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-    absolute_orig_wav_path = os.path.join(orig_dir, values.relative_wav_path)
+    absolute_orig_wav_path = orig_dir / values.relative_wav_path
     normalize_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
     wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, values.sr)

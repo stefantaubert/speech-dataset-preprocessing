@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Dict, Optional
 
 from text_utils import EngToIPAMode
@@ -14,6 +15,7 @@ from speech_dataset_preprocessing.app.ds import (preprocess_arctic,
 from speech_dataset_preprocessing.app.mel import preprocess_mels
 from speech_dataset_preprocessing.app.plots import plot_mels
 from speech_dataset_preprocessing.app.text import (preprocess_text,
+                                                   text_change_ipa,
                                                    text_convert_to_ipa,
                                                    text_normalize)
 from speech_dataset_preprocessing.app.tools import remove_silence_plot
@@ -34,7 +36,7 @@ def split_hparams_string(hparams: Optional[str]) -> Optional[Dict[str, str]]:
 
 
 def init_preprocess_thchs_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='THCHS dataset directory')
+  parser.add_argument('--path', type=Path, required=True, help='THCHS dataset directory')
   parser.add_argument('--auto_dl', action="store_true")
   parser.add_argument('--ds_name', type=str, required=True, default='thchs')
   parser.add_argument("--overwrite", action="store_true")
@@ -42,7 +44,7 @@ def init_preprocess_thchs_parser(parser: ArgumentParser):
 
 
 def init_preprocess_ljs_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='LJS dataset directory')
+  parser.add_argument('--path', type=Path, required=True, help='LJS dataset directory')
   parser.add_argument('--auto_dl', action="store_true")
   parser.add_argument('--ds_name', type=str, required=True, default='ljs')
   parser.add_argument("--overwrite", action="store_true")
@@ -50,31 +52,28 @@ def init_preprocess_ljs_parser(parser: ArgumentParser):
 
 
 def init_preprocess_mailabs_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='M-AILABS dataset directory')
-  parser.add_argument('--auto_dl', action="store_true")
+  parser.add_argument('--path', type=Path, required=True, help='M-AILABS dataset directory')
   parser.add_argument('--ds_name', type=str, required=True, default='mailabs')
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_mailabs
 
 
 def init_preprocess_arctic_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='L2 Arctic dataset directory')
-  parser.add_argument('--auto_dl', action="store_true")
+  parser.add_argument('--path', type=Path, required=True, help='L2 Arctic dataset directory')
   parser.add_argument('--ds_name', type=str, required=True, default='arctic')
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_arctic
 
 
 def init_preprocess_libritts_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='LibriTTS dataset directory')
-  parser.add_argument('--auto_dl', action="store_true")
+  parser.add_argument('--path', type=Path, required=True, help='LibriTTS dataset directory')
   parser.add_argument('--ds_name', type=str, required=True, default='libritts')
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_libritts
 
 
 def init_preprocess_thchs_kaldi_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='THCHS dataset directory')
+  parser.add_argument('--path', type=Path, required=True, help='THCHS dataset directory')
   parser.add_argument('--auto_dl', action="store_true")
   parser.add_argument('--ds_name', type=str, required=True, default='thchs_kaldi')
   parser.add_argument("--overwrite", action="store_true")
@@ -82,7 +81,7 @@ def init_preprocess_thchs_kaldi_parser(parser: ArgumentParser):
 
 
 def init_preprocess_custom_parser(parser: ArgumentParser):
-  parser.add_argument('--path', type=str, required=True, help='Custom dataset directory')
+  parser.add_argument('--path', type=Path, required=True, help='Custom dataset directory')
   parser.add_argument('--ds_name', type=str, required=True, default='custom')
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_custom
@@ -129,13 +128,20 @@ def init_text_convert_to_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--orig_text_name', type=str, required=True)
   parser.add_argument('--dest_text_name', type=str, required=True)
-  parser.add_argument('--ignore_tones', action='store_true')
-  parser.add_argument('--ignore_arcs', action='store_true')
-  parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--consider_ipa_annotations', action='store_true')
   parser.add_argument('--mode', choices=EngToIPAMode,
                       type=EngToIPAMode.__getitem__)
   return text_convert_to_ipa
+
+
+def init_text_change_ipa_parser(parser: ArgumentParser):
+  parser.add_argument('--ds_name', type=str, required=True)
+  parser.add_argument('--orig_text_name', type=str, required=True)
+  parser.add_argument('--dest_text_name', type=str, required=True)
+  parser.add_argument('--ignore_tones', action='store_true')
+  parser.add_argument('--ignore_arcs', action='store_true')
+  parser.add_argument('--ignore_stress', action='store_true')
+  return text_change_ipa
 
 
 def init_preprocess_wavs_parser(parser: ArgumentParser):
@@ -205,7 +211,7 @@ BASE_DIR_VAR = "base_dir"
 
 def add_base_dir(parser: ArgumentParser):
   assert BASE_DIR_VAR in os.environ.keys()
-  base_dir = os.environ[BASE_DIR_VAR]
+  base_dir = Path(os.environ[BASE_DIR_VAR])
   parser.set_defaults(base_dir=base_dir)
 
 
@@ -240,6 +246,7 @@ def _init_parser():
   _add_parser_to(subparsers, "preprocess-text", init_preprocess_text_parser)
   _add_parser_to(subparsers, "text-normalize", init_text_normalize_parser)
   _add_parser_to(subparsers, "text-ipa", init_text_convert_to_ipa_parser)
+  _add_parser_to(subparsers, "text-change-ipa", init_text_change_ipa_parser)
 
   _add_parser_to(subparsers, "preprocess-mels", init_preprocess_mels_parser)
   # is also possible without preprocess mels first

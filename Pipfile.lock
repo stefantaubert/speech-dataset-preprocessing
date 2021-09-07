@@ -856,12 +856,12 @@
         "speech-dataset-parser": {
             "editable": true,
             "git": "https://github.com/stefantaubert/speech-dataset-parser.git",
-            "ref": "b21a695a923fa1beee7204f0ab649eb72cc73b12"
+            "ref": "8939c3d397715183018dd54fec096da8d3923566"
         },
         "text-utils": {
             "editable": true,
             "git": "https://github.com/stefantaubert/text-utils.git",
-            "ref": "a55e3485a450755a3196adf00a75c1cab90ffeaf"
+            "ref": "5f49c9a5d9073fa0512e15d27b8bd405b122edf2"
         },
         "threadpoolctl": {
             "hashes": [
@@ -1985,7 +1985,7 @@
         "speech-dataset-parser": {
             "editable": true,
             "git": "https://github.com/stefantaubert/speech-dataset-parser.git",
-            "ref": "b21a695a923fa1beee7204f0ab649eb72cc73b12"
+            "ref": "8939c3d397715183018dd54fec096da8d3923566"
         },
         "speech-dataset-preprocessing": {
             "editable": true,
@@ -1994,7 +1994,7 @@
         "text-utils": {
             "editable": true,
             "git": "https://github.com/stefantaubert/text-utils.git",
-            "ref": "a55e3485a450755a3196adf00a75c1cab90ffeaf"
+            "ref": "5f49c9a5d9073fa0512e15d27b8bd405b122edf2"
         },
         "threadpoolctl": {
             "hashes": [

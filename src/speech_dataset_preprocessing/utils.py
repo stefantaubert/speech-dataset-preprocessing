@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import pickle
 import random
 import tarfile
 import unicodedata
@@ -167,30 +168,17 @@ def figure_to_numpy_rgb(figure: Figure) -> np.ndarray:
   return data
 
 
-def get_filenames(parent_dir: str) -> List[str]:
-  assert os.path.isdir(parent_dir)
+def get_filenames(parent_dir: Path) -> List[Path]:
+  assert parent_dir.is_dir()
   _, _, filenames = next(os.walk(parent_dir))
   filenames.sort()
+  filenames = [Path(filename) for filename in filenames]
   return filenames
 
 
-def get_filepaths(parent_dir: str) -> List[str]:
+def get_filepaths(parent_dir: Path) -> List[Path]:
   names = get_filenames(parent_dir)
-  res = [os.path.join(parent_dir, x) for x in names]
-  return res
-
-
-def get_subfolder_names(parent_dir: str) -> List[str]:
-  assert os.path.isdir(parent_dir)
-  _, subfolder_names, _ = next(os.walk(parent_dir))
-  subfolder_names.sort()
-  return subfolder_names
-
-
-def get_subfolders(parent_dir: str) -> List[str]:
-  """return full paths"""
-  names = get_subfolder_names(parent_dir)
-  res = [os.path.join(parent_dir, x) for x in names]
+  res = [parent_dir / x for x in names]
   return res
 
 
@@ -254,30 +242,6 @@ def make_batches_h_v(arr: List[_T], v: int, h: int) -> List[List[_T]]:
 
 
 class GenericList(list, Generic[_T]):
-  def save(self, file_path: str, header: bool = False):
-    data = [astuple(xi) for xi in self.items()]
-    dataframe = pd.DataFrame(data)
-    header_cols = None
-    if header and len(self) > 0:
-      first_entry = self.items()[0]
-      header_cols = list(first_entry.__dataclass_fields__.keys())
-    save_df(dataframe, file_path, header_columns=header_cols)
-
-  @classmethod
-  def load(cls, member_class: Type[_T], file_path: str):
-    data = try_load_df(file_path)
-    data_is_not_empty = data is not None
-    if data_is_not_empty:
-      data_loaded: List[_T] = [member_class(*xi) for xi in data.values]
-      res = cls(data_loaded)
-      res.load_init()
-    else:
-      res = cls()
-    return res
-
-  def load_init(self):
-    return self
-
   def items(self, with_tqdm: bool = False) -> List[_T]:
     if with_tqdm:
       return tqdm(self)
@@ -316,14 +280,6 @@ def remove_duplicates_list_orderpreserving(l: List[str]) -> List[str]:
       result.append(x)
   assert len(result) == len(set(result))
   return result
-
-
-def get_counter(l: List[List[_T]]) -> Counter:
-  items = []
-  for sublist in l:
-    items.extend(sublist)
-  symbol_counter = Counter(items)
-  return symbol_counter
 
 
 def get_unique_items(of_list: List[Union[List[_T], Set[_T]]]) -> Set[_T]:
@@ -387,25 +343,11 @@ def str_to_int(val: str) -> int:
   return res
 
 
-def get_subdir(training_dir_path: str, subdir: str, create: bool = True) -> str:
-  result = os.path.join(training_dir_path, subdir)
+def get_subdir(training_dir_path: Path, subdir: str, create: bool = True) -> Path:
+  result = training_dir_path / subdir
   if create:
-    os.makedirs(result, exist_ok=True)
+    result.mkdir(parents=True, exist_ok=True)
   return result
-
-
-def download_tar(download_url, dir_path, tarmode: str = "r:gz") -> None:
-  print("Starting download of {}...".format(download_url))
-  os.makedirs(dir_path, exist_ok=True)
-  dest = wget.download(download_url, dir_path)
-  downloaded_file = os.path.join(dir_path, dest)
-  print("\nFinished download to {}".format(downloaded_file))
-  print("Unpacking...")
-  tar = tarfile.open(downloaded_file, tarmode)
-  tar.extractall(dir_path)
-  tar.close()
-  os.remove(downloaded_file)
-  print("Done.")
 
 
 def save_txt(path: str, text: str) -> None:
@@ -420,18 +362,6 @@ def args_to_str(args) -> str:
   return res
 
 
-def parse_json(path: str) -> dict:
-  assert os.path.isfile(path)
-  with open(path, 'r', encoding='utf-8') as f:
-    tmp = json.load(f)
-  return tmp
-
-
-def save_json(path: str, mapping_dict: Dict) -> None:
-  with open(path, 'w', encoding='utf-8') as f:
-    json.dump(mapping_dict, f, ensure_ascii=False, indent=2)
-
-
 def read_lines(path: str) -> List[str]:
   assert os.path.isfile(path)
   with open(path, "r", encoding='utf-8') as f:
@@ -443,3 +373,15 @@ def read_lines(path: str) -> List[str]:
 def read_text(path: str) -> str:
   res = '\n'.join(read_lines(path))
   return res
+
+
+def save_obj(obj: Any, path: Path) -> None:
+  assert path.parent.exists() and path.parent.is_dir()
+  with open(path, mode="wb") as file:
+    pickle.dump(obj, file)
+
+
+def load_obj(path: Path) -> Any:
+  assert path.exists() and path.is_file()
+  with open(path, mode="rb") as file:
+    return pickle.load(file)
