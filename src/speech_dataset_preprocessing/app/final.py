@@ -1,4 +1,5 @@
 from logging import getLogger
+from pathlib import Path
 
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
 from speech_dataset_preprocessing.app.mel import get_mel_dir, load_mel_data
@@ -8,7 +9,7 @@ from speech_dataset_preprocessing.core.final import (FinalDsEntryList,
                                                      get_final_ds_from_data)
 
 
-def get_final_ds(base_dir: str, ds_name: str, text_name: str, wav_name: str) -> FinalDsEntryList:
+def get_final_ds(base_dir: Path, ds_name: str, text_name: str, wav_name: str) -> FinalDsEntryList:
   logger = getLogger(__name__)
   ds_dir = get_ds_dir(base_dir, ds_name, create=False)
   if not ds_dir.is_dir() or not ds_dir.exists():
