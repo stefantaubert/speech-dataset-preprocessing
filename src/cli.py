@@ -91,6 +91,7 @@ def init_preprocess_mels_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--wav_name', type=str, required=True)
   parser.add_argument('--custom_hparams', type=str)
+  parser.add_argument("--overwrite", action="store_true")
   return preprocess_mels_cli
 
 
@@ -114,6 +115,7 @@ def plot_mels_cli(**args):
 def init_preprocess_text_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--text_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return preprocess_text
 
 
@@ -121,6 +123,7 @@ def init_text_normalize_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--orig_text_name', type=str, required=True)
   parser.add_argument('--dest_text_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return text_normalize
 
 
@@ -131,6 +134,7 @@ def init_text_convert_to_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--consider_ipa_annotations', action='store_true')
   parser.add_argument('--mode', choices=EngToIPAMode,
                       type=EngToIPAMode.__getitem__)
+  parser.add_argument("--overwrite", action="store_true")
   return text_convert_to_ipa
 
 
@@ -141,18 +145,21 @@ def init_text_change_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--ignore_arcs', action='store_true')
   parser.add_argument('--ignore_stress', action='store_true')
+  parser.add_argument("--overwrite", action="store_true")
   return text_change_ipa
 
 
 def init_preprocess_wavs_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--wav_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return preprocess_wavs
 
 
 def init_wavs_stats_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--wav_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return wavs_stats
 
 
@@ -160,6 +167,7 @@ def init_wavs_normalize_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--orig_wav_name', type=str, required=True)
   parser.add_argument('--dest_wav_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return wavs_normalize
 
 
@@ -168,6 +176,7 @@ def init_wavs_upsample_parser(parser: ArgumentParser):
   parser.add_argument('--orig_wav_name', type=str, required=True)
   parser.add_argument('--dest_wav_name', type=str, required=True)
   parser.add_argument('--rate', type=int, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return wavs_resample
 
 
@@ -175,6 +184,7 @@ def init_wavs_stereo_to_mono_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--orig_wav_name', type=str, required=True)
   parser.add_argument('--dest_wav_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return wavs_stereo_to_mono
 
 
@@ -189,6 +199,7 @@ def init_wavs_remove_silence_parser(parser: ArgumentParser):
                       help="amount of factors of chunk_size at the beginning and the end should be reserved", required=True)
   parser.add_argument('--buffer_end_ms', type=float,
                       help="amount of factors of chunk_size at the beginning and the end should be reserved", required=True)
+  parser.add_argument("--overwrite", action="store_true")
   return wavs_remove_silence
 
 
