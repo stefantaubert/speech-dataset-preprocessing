@@ -11,6 +11,7 @@ isort = "*"
 pipenv-setup = "*"
 rope = "*"
 speech-dataset-preprocessing = {editable = true, path = "."}
+pytest = "*"
 
 [packages]
 pandas = "*"

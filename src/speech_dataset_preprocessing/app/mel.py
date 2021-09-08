@@ -1,6 +1,7 @@
-import os
 from functools import partial
+from logging import getLogger
 from pathlib import Path
+from shutil import rmtree
 from typing import Dict, Optional
 
 import torch
@@ -14,7 +15,7 @@ from speech_dataset_preprocessing.utils import (get_chunk_name,
                                                 get_subdir, load_obj, save_obj)
 from torch import Tensor
 
-MEL_DATA_CSV = "data.csv"
+MEL_DATA_CSV = "data.pkl"
 
 
 def _get_mel_root_dir(ds_dir: Path, create: bool = False) -> Path:
@@ -41,27 +42,38 @@ def save_mel(dest_dir: Path, data_len: int, wav_entry: WavData, mel_tensor: Tens
     chunksize=DEFAULT_PRE_CHUNK_SIZE,
     maximum=data_len - 1
   )
-  relative_dest_wav_path = Path(chunk_dir_name) / get_pytorch_filename(repr(wav_entry))
+  relative_dest_mel_path = Path(chunk_dir_name) / get_pytorch_filename(repr(wav_entry))
   absolute_chunk_dir = dest_dir / chunk_dir_name
-  absolute_dest_wav_path = dest_dir / relative_dest_wav_path
+  absolute_dest_mel_path = dest_dir / relative_dest_mel_path
 
-  os.makedirs(absolute_chunk_dir, exist_ok=True)
-  torch.save(mel_tensor, absolute_dest_wav_path)
+  absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+  torch.save(mel_tensor, absolute_dest_mel_path)
 
-  return relative_dest_wav_path
+  return relative_dest_mel_path
 
 
-def preprocess_mels(base_dir: Path, ds_name: str, wav_name: str, custom_hparams: Optional[Dict[str, str]] = None):
-  print("Preprocessing mels...")
+def preprocess_mels(base_dir: Path, ds_name: str, wav_name: str, custom_hparams: Optional[Dict[str, str]] = None, overwrite: bool = False):
+  logger = getLogger(__name__)
+  logger.info("Preprocessing mels...")
   ds_dir = get_ds_dir(base_dir, ds_name)
   mel_dir = get_mel_dir(ds_dir, wav_name)
+  if mel_dir.is_dir() and not overwrite:
+    logger.info("Already exists.")
+    return
+
+  wav_dir = get_wav_dir(ds_dir, wav_name)
+  assert wav_dir.is_dir()
+  data = load_wav_data(wav_dir)
+  if len(data) == 0:
+    return
+
   if mel_dir.is_dir():
-    print("Already exists.")
-  else:
-    wav_dir = get_wav_dir(ds_dir, wav_name)
-    assert wav_dir.is_dir()
-    data = load_wav_data(wav_dir)
-    assert len(data) > 0
-    save_callback = partial(save_mel, dest_dir=mel_dir, data_len=len(data))
-    mel_data = process(data, wav_dir, custom_hparams, save_callback)
-    save_mel_data(mel_dir, mel_data)
+    assert overwrite
+    logger.info("Overwriting existing data.")
+    rmtree(mel_dir)
+  mel_dir.mkdir(exist_ok=False, parents=True)
+
+  save_callback = partial(save_mel, dest_dir=mel_dir, data_len=len(data))
+  mel_data = process(data, wav_dir, custom_hparams, save_callback)
+  save_mel_data(mel_dir, mel_data)
+  logger.info("Done.")

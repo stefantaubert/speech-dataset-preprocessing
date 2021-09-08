@@ -117,6 +117,7 @@ def preprocess(data: DsDataList, dest_dir: Path) -> WavDataList:
 
 
 def resample(data: WavDataList, orig_dir: Path, dest_dir: Path, new_rate: int) -> WavDataList:
+  assert dest_dir.is_dir() and dest_dir.exists()
   result = WavDataList()
 
   for values in data.items(True):

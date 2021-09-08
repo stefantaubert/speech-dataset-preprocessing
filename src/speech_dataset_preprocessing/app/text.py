@@ -4,15 +4,15 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
-from speech_dataset_preprocessing.core.text import (SymbolsDict, TextData,
-                                                    TextDataList, change_ipa,
-                                                    convert_to_ipa, log_stats,
-                                                    normalize, preprocess)
+from speech_dataset_preprocessing.core.text import (SymbolsDict, TextDataList,
+                                                    change_ipa, convert_to_ipa,
+                                                    log_stats, normalize,
+                                                    preprocess)
 from speech_dataset_preprocessing.utils import (get_subdir, load_obj, save_obj,
                                                 save_txt)
 from text_utils import EngToIPAMode
 
-_text_data_csv = "data.csv"
+_text_data_csv = "data.pkl"
 _text_symbols_json = "symbols.json"
 _whole_text_txt = "text.txt"
 
@@ -86,6 +86,7 @@ def preprocess_text(base_dir: Path, ds_name: str, text_name: str) -> None:
     text_dir.mkdir(parents=True, exist_ok=False)
     save_text_data(text_dir, text_data)
     save_text_symbols_json(text_dir, text_data.get_symbol_stats())
+    save_whole_text(text_dir, text_data)
 
 
 def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, operation: Callable[[TextDataList], TextDataList]):
@@ -103,6 +104,7 @@ def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: 
     dest_text_dir.mkdir(parents=True, exist_ok=False)
     save_text_data(dest_text_dir, text_data)
     save_text_symbols_json(dest_text_dir, text_data.get_symbol_stats())
+    save_whole_text(dest_text_dir, text_data)
     logger.info("Dataset processed.")
 
 

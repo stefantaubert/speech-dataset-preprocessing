@@ -24,7 +24,7 @@ from unidecode import unidecode as convert_to_ascii
 # from speech_dataset_preprocessing.app.wav import preprocess_wavs
 # from speech_dataset_preprocessing.app.mel import preprocess_mels
 
-_ds_data_csv = "data.csv"
+_ds_data_csv = "data.pkl"
 
 
 def get_ds_dir(base_dir: Path, ds_name: str, create: bool = False) -> Path:
@@ -52,8 +52,8 @@ def _save_ds_speaker_log_json(ds_dir: Path, speakers_log: SpeakersLogDict) -> No
 
 def _save_speaker_examples(ds_dir: Path, examples: DsDataList, logger: Logger) -> None:
   logger.info("Saving examples for each speaker...")
-  for example in examples.items(True):
-    dest_file_name = f"{example.speaker_id}-{str(example.speaker_gender)}-{convert_to_ascii(example.speaker_name)}.wav"
+  for i, example in enumerate(examples.items(True), start=1):
+    dest_file_name = f"{i}-{str(example.speaker_gender)}-{convert_to_ascii(example.speaker_name)}.wav"
     dest_path = get_ds_examples_dir(ds_dir, create=True) / dest_file_name
     copyfile(example.wav_path, dest_path)
 

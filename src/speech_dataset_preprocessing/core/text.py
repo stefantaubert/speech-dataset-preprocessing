@@ -126,7 +126,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
   result = TextDataList()
 
   for entry in data.items(True):
-    new_symbols = symbols_to_ipa(
+    new_symbols, new_format = symbols_to_ipa(
       symbols=entry.symbols,
       lang=entry.symbols_language,
       symbols_format=entry.symbols_format,
@@ -136,7 +136,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
     text_entry = TextData(
       entry_id=entry.entry_id,
       symbols=new_symbols,
-      symbols_format=entry.symbols_format,
+      symbols_format=new_format,
       symbols_language=entry.symbols_language,
     )
     result.append(text_entry)

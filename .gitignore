@@ -135,3 +135,4 @@ globals_debug.py
 playground.*
 .vscode/
 debug/
+src/debug/
