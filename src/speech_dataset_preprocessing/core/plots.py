@@ -19,7 +19,7 @@ def process(data: WavDataList, ds: DsDataList, wav_dir: Path, custom_hparams: Op
 
   all_paths: List[Path] = []
   for wav_entry, ds_entry in zip(data.items(True), ds.items(True)):
-    absolute_wav_path = wav_dir / wav_entry.relative_wav_path
+    absolute_wav_path = wav_dir / wav_entry.wav_relative_path
     mel_tensor = mel_parser.get_mel_tensor_from_file(absolute_wav_path)
     absolute_path = save_callback(wav_entry=wav_entry, ds_entry=ds_entry, mel_tensor=mel_tensor)
     all_paths.append(absolute_path)

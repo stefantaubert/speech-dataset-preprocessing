@@ -24,7 +24,7 @@ class DsData:
   symbols_language: Language
   speaker_name: Speaker
   speaker_gender: Gender
-  wav_path: Path
+  wav_absolute_path: Path
 
   def __repr__(self):
     return str(self.entry_id)
@@ -63,7 +63,7 @@ def get_dsdata_from_predata(predata: PreData, i: int) -> DsData:
     ),
     symbols_format=text_format,
     symbols_language=text_language,
-    wav_path=predata.wav_path,
+    wav_absolute_path=predata.wav_path,
     speaker_name=predata.speaker_name,
     speaker_gender=predata.speaker_gender,
   )

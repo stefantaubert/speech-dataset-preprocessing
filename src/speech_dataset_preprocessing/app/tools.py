@@ -70,7 +70,7 @@ def remove_silence_plot(base_dir: Path, ds_name: str, wav_name: str, chunk_size:
   dest_name = f"cs={chunk_size},ts={threshold_start}dBFS,bs={buffer_start_ms}ms,te={threshold_end}dBFS,be={buffer_end_ms}ms"
 
   wav_trimmed = dest_dir / f"{dest_name}.wav"
-  absolute_wav_path = wav_dir / entry.relative_wav_path
+  absolute_wav_path = wav_dir / entry.wav_relative_path
 
   mel_orig, mel_trimmed = remove_silence_plot_core(
     wav_path=absolute_wav_path,

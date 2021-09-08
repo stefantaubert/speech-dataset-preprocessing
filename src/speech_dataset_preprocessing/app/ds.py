@@ -1,11 +1,10 @@
-import os
 from functools import partial
 from logging import Logger, getLogger
 from pathlib import Path
 from shutil import copyfile, rmtree
-from typing import Callable, Tuple
+from typing import Callable
 
-from speech_dataset_preprocessing.core.ds import (DsData, DsDataList,
+from speech_dataset_preprocessing.core.ds import (DsDataList,
                                                   PreprocessingResult,
                                                   arctic_preprocess,
                                                   custom_preprocess,
@@ -55,7 +54,7 @@ def _save_speaker_examples(ds_dir: Path, examples: DsDataList, logger: Logger) -
   for i, example in enumerate(examples.items(True), start=1):
     dest_file_name = f"{i}-{str(example.speaker_gender)}-{convert_to_ascii(example.speaker_name)}.wav"
     dest_path = get_ds_examples_dir(ds_dir, create=True) / dest_file_name
-    copyfile(example.wav_path, dest_path)
+    copyfile(example.wav_absolute_path, dest_path)
 
 
 def preprocess_thchs(base_dir: Path, ds_name: str, path: Path, auto_dl: bool, overwrite: bool):

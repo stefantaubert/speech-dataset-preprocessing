@@ -17,8 +17,8 @@ from torch import Tensor
 @dataclass()
 class MelData:
   entry_id: int
-  relative_mel_path: Path
-  n_mel_channels: int
+  mel_relative_path: Path
+  mel_n_channels: int
 
 
 class MelDataList(GenericList[MelData]):
@@ -32,7 +32,7 @@ def process(data: WavDataList, wav_dir: Path, custom_hparams: Optional[Dict[str,
   mel_parser = TacotronSTFT(hparams, logger=getLogger())
 
   for wav_entry in data.items(True):
-    absolute_wav_path = wav_dir / wav_entry.relative_wav_path
+    absolute_wav_path = wav_dir / wav_entry.wav_relative_path
     mel_tensor = mel_parser.get_mel_tensor_from_file(absolute_wav_path)
     path = save_callback(wav_entry=wav_entry, mel_tensor=mel_tensor)
     mel_data = MelData(wav_entry.entry_id, path, hparams.n_mel_channels)

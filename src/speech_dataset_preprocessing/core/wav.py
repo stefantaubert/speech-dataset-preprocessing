@@ -22,9 +22,9 @@ from text_utils.types import Speaker
 @dataclass()
 class WavData:
   entry_id: int
-  relative_wav_path: Path
-  duration: float
-  sr: int
+  wav_relative_path: Path
+  wav_duration: float
+  wav_sampling_rate: int
   #size: float
   #is_stereo: bool
 
@@ -43,10 +43,10 @@ class WavDataList(GenericList[WavData]):
 def log_stats(ds_data: DsDataList, wav_data: WavDataList):
   logger = getLogger(__name__)
   if len(wav_data) > 0:
-    logger.info(f"Sampling rate: {wav_data.items()[0].sr}")
+    logger.info(f"Sampling rate: {wav_data.items()[0].wav_sampling_rate}")
   stats: List[str, int, float, float, float, int] = []
 
-  durations = [x.duration for x in wav_data.items()]
+  durations = [x.wav_duration for x in wav_data.items()]
   stats.append((
     "Overall",
     len(wav_data),
@@ -60,7 +60,7 @@ def log_stats(ds_data: DsDataList, wav_data: WavDataList):
   for ds_entry, wav_entry in zip(ds_data.items(), wav_data.items()):
     if ds_entry.speaker_name not in speaker_durations:
       speaker_durations[ds_entry.speaker_name] = []
-    speaker_durations[ds_entry.speaker_name].append(wav_entry.duration)
+    speaker_durations[ds_entry.speaker_name].append(wav_entry.wav_duration)
   for speaker_name, speaker_durations in speaker_durations.items():
     stats.append((
       speaker_name,
@@ -96,7 +96,7 @@ def preprocess(data: DsDataList, dest_dir: Path) -> WavDataList:
   result = WavDataList()
 
   for values in data.items(True):
-    sampling_rate, wav = read(values.wav_path)
+    sampling_rate, wav = read(values.wav_absolute_path)
     duration = get_duration_s(wav, sampling_rate)
 
     chunk_dir_name = get_chunk_name(
@@ -132,9 +132,9 @@ def resample(data: WavDataList, orig_dir: Path, dest_dir: Path, new_rate: int) -
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     # TODO assert not is_overamp
-    absolute_orig_wav_path = orig_dir / values.relative_wav_path
+    absolute_orig_wav_path = orig_dir / values.wav_relative_path
     upsample_file(absolute_orig_wav_path, absolute_dest_wav_path, new_rate)
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, new_rate)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, new_rate)
     result.append(wav_data)
 
   return result
@@ -155,10 +155,10 @@ def stereo_to_mono(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavData
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     # todo assert not is_overamp
-    absolute_orig_wav_path = orig_dir / values.relative_wav_path
+    absolute_orig_wav_path = orig_dir / values.wav_relative_path
     stereo_to_mono_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, values.sr)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result
@@ -178,7 +178,7 @@ def remove_silence(data: WavDataList, orig_dir: Path, dest_dir: Path, chunk_size
     relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-    absolute_orig_wav_path = orig_dir / values.relative_wav_path
+    absolute_orig_wav_path = orig_dir / values.wav_relative_path
     new_duration = remove_silence_file(
       in_path=absolute_orig_wav_path,
       out_path=absolute_dest_wav_path,
@@ -189,7 +189,7 @@ def remove_silence(data: WavDataList, orig_dir: Path, dest_dir: Path, chunk_size
       buffer_end_ms=buffer_end_ms
     )
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, new_duration, values.sr)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path, new_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result
@@ -232,10 +232,10 @@ def normalize(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavDataList:
     relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-    absolute_orig_wav_path = orig_dir / values.relative_wav_path
+    absolute_orig_wav_path = orig_dir / values.wav_relative_path
     normalize_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.duration, values.sr)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result
