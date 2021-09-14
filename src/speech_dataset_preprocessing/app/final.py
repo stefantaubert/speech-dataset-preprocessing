@@ -13,23 +13,27 @@ def get_final_ds(base_dir: Path, ds_name: str, text_name: str, wav_name: str) ->
   logger = getLogger(__name__)
   ds_dir = get_ds_dir(base_dir, ds_name, create=False)
   if not ds_dir.is_dir() or not ds_dir.exists():
-    logger.info("Dataset not found.")
-    return
+    msg = "Dataset not found!"
+    logger.exception(msg)
+    raise Exception(msg)
 
   text_dir = get_text_dir(ds_dir, text_name)
   if not text_dir.is_dir() or not text_dir.exists():
-    logger.info("Text data not found.")
-    return
+    msg = "Text data not found!"
+    logger.exception(msg)
+    raise Exception(msg)
 
   wav_dir = get_wav_dir(ds_dir, wav_name)
   if not wav_dir.is_dir() or not wav_dir.exists():
-    logger.info("Wav data not found.")
-    return
+    msg = "Wav data not found!"
+    logger.exception(msg)
+    raise Exception(msg)
 
   mel_dir = get_mel_dir(ds_dir, wav_name)
   if not mel_dir.is_dir() or not mel_dir.exists():
-    logger.info("Wav data not found.")
-    return
+    msg = "Mel data not found!"
+    logger.exception(msg)
+    raise Exception(msg)
 
   ds_data = load_ds_data(ds_dir)
   text_data = load_text_data(text_dir)
