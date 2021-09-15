@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 from numpy.core.fromnumeric import mean
+from sentence2pronunciation import clear_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.utils import GenericList
 from text_utils import (EngToIPAMode, Language, Speaker, SymbolFormat, Symbols,
@@ -140,6 +141,8 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
       symbols_language=entry.symbols_language,
     )
     result.append(text_entry)
+
+  clear_cache()
 
   return result
 
