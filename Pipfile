@@ -20,10 +20,13 @@ tqdm = "*"
 numpy = "*"
 Unidecode = "*"
 torch = "==1.7.1"
-speech-dataset-parser = {editable = true, ref = "master", git = "https://github.com/stefantaubert/speech-dataset-parser.git"}
-text-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/text-utils.git"}
-audio-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/audio-utils.git"}
-image-utils = {editable = true, ref = "master", git = "https://github.com/stefantaubert/image-utils.git"}
+pronunciation_dict_parser = {editable = true, path = "./../pronunciation_dict_parser"}
+g2p_en = {editable = true, path = "./../g2p"}
+sentence2pronunciation = {editable = true, path = "./../sentence2pronunciation"}
+speech-dataset-parser = {editable = true, path = "./../speech-dataset-parser"}
+text-utils = {editable = true, path = "./../text-utils"}
+audio-utils = {editable = true, path = "./../audio-utils"}
+image-utils = {editable = true, path = "./../image-utils"}
 
 [requires]
 python_version = "3.8"
