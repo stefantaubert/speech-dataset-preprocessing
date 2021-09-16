@@ -9,8 +9,9 @@ from sentence2pronunciation import clear_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.utils import GenericList
 from text_utils import (EngToIPAMode, Language, Speaker, SymbolFormat, Symbols,
-                        SymbolsDict, remove_arcs, remove_stress, remove_tones,
-                        symbols_to_ipa, text_normalize, text_to_symbols)
+                        SymbolsDict, break_n_thongs, remove_arcs,
+                        remove_stress, remove_tones, symbols_to_ipa,
+                        text_normalize, text_to_symbols)
 
 
 @dataclass()
@@ -33,8 +34,8 @@ class TextDataList(GenericList[TextData]):
         entry.entry_id,
         ''.join(entry.symbols),
         len(entry.symbols),
-        str(entry.symbols_format),
-        str(entry.symbols_language),
+        repr(entry.symbols_format),
+        repr(entry.symbols_language),
       ) for entry in self.items()
     ]
     columns = ["Id", "Symbols", "# Symbols", "Format", "Language"]
@@ -161,7 +162,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
   return result
 
 
-def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool) -> TextDataList:
+def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_all_n_thongs: bool) -> TextDataList:
   result = TextDataList()
 
   for entry in data.items():
@@ -175,6 +176,9 @@ def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore
 
     if ignore_stress:
       new_symbols = remove_stress(new_symbols)
+
+    if break_all_n_thongs:
+      new_symbols = break_n_thongs(new_symbols)
 
     text_entry = TextData(
       entry_id=entry.entry_id,

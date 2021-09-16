@@ -145,6 +145,7 @@ def init_text_change_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--ignore_tones', action='store_true')
   parser.add_argument('--ignore_arcs', action='store_true')
   parser.add_argument('--ignore_stress', action='store_true')
+  parser.add_argument('--break_all_n_thongs', action='store_true')
   parser.add_argument("--overwrite", action="store_true")
   return text_change_ipa
 
