@@ -4,13 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+speech-dataset-preprocessing = {editable = true, path = "."}
 autopep8 = "*"
 pylint = "*"
 pycodestyle = "*"
 isort = "*"
 pipenv-setup = "*"
 rope = "*"
-speech-dataset-preprocessing = {editable = true, path = "."}
 pytest = "*"
 
 [packages]
