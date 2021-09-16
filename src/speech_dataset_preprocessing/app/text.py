@@ -9,6 +9,7 @@ from speech_dataset_preprocessing.core.text import (SymbolsDict, TextDataList,
                                                     change_ipa, convert_to_ipa,
                                                     log_stats, normalize,
                                                     preprocess)
+from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
 from speech_dataset_preprocessing.utils import (get_subdir, load_obj, save_obj,
                                                 save_txt)
 from text_utils import EngToIPAMode
@@ -16,6 +17,7 @@ from text_utils import EngToIPAMode
 _text_data_csv = "data.pkl"
 _text_symbols_json = "symbols.json"
 _whole_text_txt = "text.txt"
+ANALYSIS_DF_PATH = "analysis.csv"
 
 
 def _get_text_root_dir(ds_dir: Path, create: bool = False) -> Path:
@@ -40,6 +42,12 @@ def save_whole_text(text_dir: Path, data: TextDataList) -> None:
   path = text_dir / _whole_text_txt
   text = data.get_whole_text()
   save_txt(path, text)
+
+
+def save_analytics_df(text_dir: Path, data: TextDataList) -> None:
+  path = text_dir / ANALYSIS_DF_PATH
+  analytics_df = data.get_analytics_df()
+  analytics_df.to_csv(path, sep=DEFAULT_CSV_SEPERATOR, header=True, index=False)
 
 
 def load_text_data(text_dir: Path) -> TextDataList:
@@ -69,8 +77,9 @@ def export_text(base_dir: Path, ds_name: str, text_name: str) -> None:
   ds_dir = get_ds_dir(base_dir, ds_name)
   text_dir = get_text_dir(ds_dir, text_name)
   if text_dir.is_dir():
-    data = load_text_data(text_dir)
-    save_whole_text(text_dir, data)
+    text_data = load_text_data(text_dir)
+    save_whole_text(text_dir, text_data)
+    save_analytics_df(text_dir, text_data)
     logger.info("Finished.")
 
 
@@ -89,12 +98,13 @@ def preprocess_text(base_dir: Path, ds_name: str, text_name: str, overwrite: boo
   if text_dir.is_dir():
     assert overwrite
     logger.info("Overwriting existing data.")
-    rmtree(ds_dir)
+    rmtree(text_dir)
   text_dir.mkdir(parents=True, exist_ok=False)
 
   save_text_data(text_dir, text_data)
   save_text_symbols_json(text_dir, text_data.get_symbol_stats())
   save_whole_text(text_dir, text_data)
+  save_analytics_df(text_dir, text_data)
 
 
 def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, operation: Callable[[TextDataList], TextDataList], overwrite: bool):
@@ -114,12 +124,13 @@ def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: 
   if dest_text_dir.is_dir():
     assert overwrite
     logger.info("Overwriting existing data.")
-    rmtree(ds_dir)
+    rmtree(dest_text_dir)
   dest_text_dir.mkdir(parents=True, exist_ok=False)
 
   save_text_data(dest_text_dir, text_data)
   save_text_symbols_json(dest_text_dir, text_data.get_symbol_stats())
   save_whole_text(dest_text_dir, text_data)
+  save_analytics_df(dest_text_dir, text_data)
   logger.info("Dataset processed.")
 
 

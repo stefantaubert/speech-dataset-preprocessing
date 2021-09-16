@@ -27,6 +27,20 @@ class TextDataList(GenericList[TextData]):
     res = " ".join(texts)
     return res
 
+  def get_analytics_df(self) -> pd.DataFrame:
+    values = [
+      (
+        entry.entry_id,
+        ''.join(entry.symbols),
+        len(entry.symbols),
+        str(entry.symbols_format),
+        str(entry.symbols_language),
+      ) for entry in self.items()
+    ]
+    columns = ["Id", "Symbols", "# Symbols", "Format", "Language"]
+    res = pd.DataFrame(data=values, columns=columns)
+    return res
+
   def get_symbol_stats(self) -> SymbolsDict:
     symbol_counter = Counter(symbol for item in self.items() for symbol in item.symbols)
     symbols_dict = SymbolsDict.fromcounter(symbol_counter)
