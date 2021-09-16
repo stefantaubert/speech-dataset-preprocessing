@@ -1,6 +1,7 @@
 from functools import partial
 from logging import getLogger
 from pathlib import Path
+from shutil import rmtree
 from typing import Callable, Optional
 
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
@@ -73,49 +74,63 @@ def export_text(base_dir: Path, ds_name: str, text_name: str) -> None:
     logger.info("Finished.")
 
 
-def preprocess_text(base_dir: Path, ds_name: str, text_name: str) -> None:
+def preprocess_text(base_dir: Path, ds_name: str, text_name: str, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Preprocessing text...")
   ds_dir = get_ds_dir(base_dir, ds_name)
   text_dir = get_text_dir(ds_dir, text_name)
-  if text_dir.is_dir():
+  if text_dir.is_dir() and not overwrite:
     logger.error("Already exists.")
-  else:
-    data = load_ds_data(ds_dir)
-    text_data = preprocess(data)
-    text_dir.mkdir(parents=True, exist_ok=False)
-    save_text_data(text_dir, text_data)
-    save_text_symbols_json(text_dir, text_data.get_symbol_stats())
-    save_whole_text(text_dir, text_data)
+    return
+
+  data = load_ds_data(ds_dir)
+  text_data = preprocess(data)
+
+  if text_dir.is_dir():
+    assert overwrite
+    logger.info("Overwriting existing data.")
+    rmtree(ds_dir)
+  text_dir.mkdir(parents=True, exist_ok=False)
+
+  save_text_data(text_dir, text_data)
+  save_text_symbols_json(text_dir, text_data.get_symbol_stats())
+  save_whole_text(text_dir, text_data)
 
 
-def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, operation: Callable[[TextDataList], TextDataList]):
+def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, operation: Callable[[TextDataList], TextDataList], overwrite: bool):
   logger = getLogger(__name__)
   ds_dir = get_ds_dir(base_dir, ds_name)
   orig_text_dir = get_text_dir(ds_dir, orig_text_name)
   assert orig_text_dir.is_dir()
   dest_text_dir = get_text_dir(ds_dir, dest_text_name)
-  if dest_text_dir.is_dir():
+  if dest_text_dir.is_dir() and not overwrite:
     logger.error("Already exists.")
-  else:
-    logger.info("Reading data...")
-    data = load_text_data(orig_text_dir)
-    text_data = operation(data)
-    dest_text_dir.mkdir(parents=True, exist_ok=False)
-    save_text_data(dest_text_dir, text_data)
-    save_text_symbols_json(dest_text_dir, text_data.get_symbol_stats())
-    save_whole_text(dest_text_dir, text_data)
-    logger.info("Dataset processed.")
+    return
+
+  logger.info("Reading data...")
+  data = load_text_data(orig_text_dir)
+  text_data = operation(data)
+
+  if dest_text_dir.is_dir():
+    assert overwrite
+    logger.info("Overwriting existing data.")
+    rmtree(ds_dir)
+  dest_text_dir.mkdir(parents=True, exist_ok=False)
+
+  save_text_data(dest_text_dir, text_data)
+  save_text_symbols_json(dest_text_dir, text_data.get_symbol_stats())
+  save_whole_text(dest_text_dir, text_data)
+  logger.info("Dataset processed.")
 
 
-def text_normalize(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str) -> None:
+def text_normalize(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Normalizing text...")
   operation = partial(normalize)
-  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
+  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, consider_ipa_annotations: Optional[bool] = False, mode: Optional[EngToIPAMode] = EngToIPAMode.EPITRAN) -> None:
+def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, consider_ipa_annotations: Optional[bool], mode: Optional[EngToIPAMode], overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Converting text to IPA...")
   operation = partial(
@@ -123,10 +138,10 @@ def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_
     mode=mode,
     consider_ipa_annotations=consider_ipa_annotations,
   )
-  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
+  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool = False, ignore_arcs: bool = False, ignore_stress: bool = False) -> None:
+def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Changing IPA...")
   operation = partial(
@@ -135,4 +150,4 @@ def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text
     ignore_arcs=ignore_arcs,
     ignore_stress=ignore_stress,
   )
-  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation)
+  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)

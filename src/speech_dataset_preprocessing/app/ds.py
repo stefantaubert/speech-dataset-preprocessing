@@ -120,6 +120,7 @@ def __preprocess_ds(base_dir: Path, ds_name: str, preprocess_func: Callable[[], 
     logger.info("Overwriting existing data.")
     rmtree(ds_dir)
   ds_dir.mkdir(exist_ok=False, parents=True)
+
   _save_ds_speaker_log_json(ds_dir, speakers_log)
   __save_ds_data(ds_dir, ds_data)
   examples = get_speaker_examples(ds_data)
