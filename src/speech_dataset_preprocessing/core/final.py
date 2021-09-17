@@ -43,12 +43,12 @@ def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
       repr(entry.symbols_original_format),
       ''.join(entry.symbols),
       repr(entry.symbols_format),
-      str(entry.wav_original_absolute_path),
-      str(entry.wav_absolute_path),
       entry.wav_duration,
       entry.wav_sampling_rate,
-      str(entry.mel_absolute_path),
       entry.mel_n_channels,
+      str(entry.wav_original_absolute_path),
+      str(entry.wav_absolute_path),
+      str(entry.mel_absolute_path),
     ) for entry in data.items()
   ]
 
@@ -60,12 +60,12 @@ def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
     "Original symbols format",
     "Symbols",
     "Symbols format",
-    "Original wav-path",
-    "Wav-path",
     "Wav duration (s)",
     "Wav sampling rate (Hz)",
-    "Mel-path",
     "# Mel-channels",
+    "Original wav-path",
+    "Wav-path",
+    "Mel-path",
   ]
 
   result = DataFrame(data=values, columns=columns)
