@@ -12,6 +12,7 @@ from speech_dataset_preprocessing.app.ds import (preprocess_arctic,
                                                  preprocess_mailabs,
                                                  preprocess_thchs,
                                                  preprocess_thchs_kaldi)
+from speech_dataset_preprocessing.app.final import merge_to_final_ds
 from speech_dataset_preprocessing.app.mel import preprocess_mels
 from speech_dataset_preprocessing.app.plots import plot_mels
 from speech_dataset_preprocessing.app.text import (preprocess_text,
@@ -110,6 +111,15 @@ def init_mels_plot_parser(parser: ArgumentParser):
 def plot_mels_cli(**args):
   args["custom_hparams"] = split_hparams_string(args["custom_hparams"])
   plot_mels(**args)
+
+
+def init_merge_to_final_ds_parser(parser: ArgumentParser):
+  parser.add_argument('--ds_name', type=str, required=True)
+  parser.add_argument('--text_name', type=str, required=True)
+  parser.add_argument('--audio_name', type=str, required=True)
+  parser.add_argument('--final_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
+  return merge_to_final_ds
 
 
 def init_preprocess_text_parser(parser: ArgumentParser):
@@ -264,6 +274,8 @@ def _init_parser():
   _add_parser_to(subparsers, "preprocess-mels", init_preprocess_mels_parser)
   # is also possible without preprocess mels first
   _add_parser_to(subparsers, "mels-plot", init_mels_plot_parser)
+
+  _add_parser_to(subparsers, "merge", init_merge_to_final_ds_parser)
 
   return result
 

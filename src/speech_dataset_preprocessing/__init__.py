@@ -1,2 +1,2 @@
-from speech_dataset_preprocessing.app import get_final_ds
+from speech_dataset_preprocessing.app import load_final_ds
 from speech_dataset_preprocessing.core import FinalDsEntry, FinalDsEntryList

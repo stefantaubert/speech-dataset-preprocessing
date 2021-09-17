@@ -1,1 +1,1 @@
-from speech_dataset_preprocessing.app.final import get_final_ds
+from speech_dataset_preprocessing.app.final import load_final_ds

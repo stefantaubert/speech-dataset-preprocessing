@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from pandas import DataFrame
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.core.mel import MelDataList
 from speech_dataset_preprocessing.core.text import TextDataList
@@ -30,6 +31,45 @@ class FinalDsEntry():
 
 class FinalDsEntryList(GenericList[FinalDsEntry]):
   pass
+
+
+def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
+  values = [
+    (
+      entry.identifier,
+      entry.speaker_name,
+      repr(entry.symbols_language),
+      ''.join(entry.symbols_original),
+      repr(entry.symbols_original_format),
+      ''.join(entry.symbols),
+      repr(entry.symbols_format),
+      str(entry.wav_original_absolute_path),
+      str(entry.wav_absolute_path),
+      entry.wav_duration,
+      entry.wav_sampling_rate,
+      str(entry.mel_absolute_path),
+      entry.mel_n_channels,
+    ) for entry in data.items()
+  ]
+
+  columns = [
+    "Id",
+    "Speaker",
+    "Language",
+    "Original symbols",
+    "Original symbols format",
+    "Symbols",
+    "Symbols format",
+    "Original wav-path",
+    "Wav-path",
+    "Wav duration (s)",
+    "Wav sampling rate (Hz)",
+    "Mel-path",
+    "# Mel-channels",
+  ]
+
+  result = DataFrame(data=values, columns=columns)
+  return result
 
 
 def get_final_ds_from_data(ds_data: DsDataList, text_data: TextDataList, wav_data: WavDataList, mel_data: MelDataList, wav_dir: Path, mel_dir: Path) -> FinalDsEntryList:
