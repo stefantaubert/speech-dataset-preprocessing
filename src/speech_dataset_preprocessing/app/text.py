@@ -15,9 +15,9 @@ from speech_dataset_preprocessing.utils import (get_subdir, load_obj, save_obj,
 from text_utils import EngToIPAMode
 
 _text_data_csv = "data.pkl"
-_text_symbols_json = "symbols.json"
+ANALYSIS_SYMBOLS_DF_FILENAME = "symbols.csv"
 _whole_text_txt = "text.txt"
-ANALYSIS_DF_PATH = "analysis.csv"
+ANALYSIS_DF_FILENAME = "analysis.csv"
 
 
 def _get_text_root_dir(ds_dir: Path, create: bool = False) -> Path:
@@ -29,13 +29,14 @@ def get_text_dir(ds_dir: Path, text_name: str, create: bool = False) -> Path:
 
 
 def load_text_symbols_json(text_dir: Path) -> SymbolsDict:
-  path = text_dir / _text_symbols_json
+  path = text_dir / ANALYSIS_SYMBOLS_DF_FILENAME
   return SymbolsDict.load(path)
 
 
-def save_text_symbols_json(text_dir: Path, data: SymbolsDict) -> None:
-  path = text_dir / _text_symbols_json
-  data.save(path)
+def save_symbols_stats_df(text_dir: Path, data: TextDataList) -> None:
+  path = text_dir / ANALYSIS_SYMBOLS_DF_FILENAME
+  df = data.get_symbol_stats_df()
+  df.to_csv(path, sep=DEFAULT_CSV_SEPERATOR, header=True, index=False)
 
 
 def save_whole_text(text_dir: Path, data: TextDataList) -> None:
@@ -45,7 +46,7 @@ def save_whole_text(text_dir: Path, data: TextDataList) -> None:
 
 
 def save_analytics_df(text_dir: Path, data: TextDataList) -> None:
-  path = text_dir / ANALYSIS_DF_PATH
+  path = text_dir / ANALYSIS_DF_FILENAME
   analytics_df = data.get_analytics_df()
   analytics_df.to_csv(path, sep=DEFAULT_CSV_SEPERATOR, header=True, index=False)
 
@@ -102,7 +103,7 @@ def preprocess_text(base_dir: Path, ds_name: str, text_name: str, overwrite: boo
   text_dir.mkdir(parents=True, exist_ok=False)
 
   save_text_data(text_dir, text_data)
-  save_text_symbols_json(text_dir, text_data.get_symbol_stats())
+  save_symbols_stats_df(text_dir, text_data)
   save_whole_text(text_dir, text_data)
   save_analytics_df(text_dir, text_data)
 
@@ -128,7 +129,7 @@ def _text_op(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: 
   dest_text_dir.mkdir(parents=True, exist_ok=False)
 
   save_text_data(dest_text_dir, text_data)
-  save_text_symbols_json(dest_text_dir, text_data.get_symbol_stats())
+  save_symbols_stats_df(dest_text_dir, text_data)
   save_whole_text(dest_text_dir, text_data)
   save_analytics_df(dest_text_dir, text_data)
   logger.info("Dataset processed.")
@@ -152,7 +153,7 @@ def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, overwrite: bool, break_all_n_thongs: bool) -> None:
+def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, remove_space_around_punctuation: bool, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Changing IPA...")
   operation = partial(
@@ -160,6 +161,7 @@ def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text
     ignore_tones=ignore_tones,
     ignore_arcs=ignore_arcs,
     ignore_stress=ignore_stress,
-    break_all_n_thongs=break_all_n_thongs,
+    break_n_thongs=break_n_thongs,
+    remove_space_around_punctuation=remove_space_around_punctuation,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)

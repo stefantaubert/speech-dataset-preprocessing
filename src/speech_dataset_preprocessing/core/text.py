@@ -9,9 +9,9 @@ from sentence2pronunciation import clear_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.utils import GenericList
 from text_utils import (EngToIPAMode, Language, Speaker, SymbolFormat, Symbols,
-                        SymbolsDict, break_n_thongs, remove_arcs,
-                        remove_stress, remove_tones, symbols_to_ipa,
-                        text_normalize, text_to_symbols)
+                        SymbolsDict)
+from text_utils import change_ipa as change_ipa_method
+from text_utils import symbols_to_ipa, text_normalize, text_to_symbols
 
 
 @dataclass()
@@ -42,10 +42,13 @@ class TextDataList(GenericList[TextData]):
     res = pd.DataFrame(data=values, columns=columns)
     return res
 
-  def get_symbol_stats(self) -> SymbolsDict:
+  def get_symbol_stats_df(self) -> pd.DataFrame:
     symbol_counter = Counter(symbol for item in self.items() for symbol in item.symbols)
-    symbols_dict = SymbolsDict.fromcounter(symbol_counter)
-    return symbols_dict
+    values = [(symbol, count) for symbol, count in symbol_counter.most_common()]
+    values.sort()
+    columns = ["Symbol", "# Occurrences"]
+    res = pd.DataFrame(data=values, columns=columns)
+    return res
 
 
 def log_stats(ds_data: DsDataList, text_data: TextDataList):
@@ -162,23 +165,18 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
   return result
 
 
-def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_all_n_thongs: bool) -> TextDataList:
+def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, remove_space_around_punctuation: bool) -> TextDataList:
   result = TextDataList()
 
   for entry in data.items():
-    new_symbols = entry.symbols
-
-    if ignore_arcs:
-      new_symbols = remove_arcs(new_symbols)
-
-    if ignore_tones:
-      new_symbols = remove_tones(new_symbols)
-
-    if ignore_stress:
-      new_symbols = remove_stress(new_symbols)
-
-    if break_all_n_thongs:
-      new_symbols = break_n_thongs(new_symbols)
+    new_symbols = change_ipa_method(
+      symbols=entry.symbols,
+      ignore_tones=ignore_tones,
+      ignore_arcs=ignore_arcs,
+      ignore_stress=ignore_stress,
+      break_n_thongs=break_n_thongs,
+      remove_space_around_punctuation=remove_space_around_punctuation,
+    )
 
     text_entry = TextData(
       entry_id=entry.entry_id,
