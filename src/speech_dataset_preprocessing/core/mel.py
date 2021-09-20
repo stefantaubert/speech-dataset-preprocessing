@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 
 from audio_utils.mel import TacotronSTFT, TSTFTHParams
+from general_utils import GenericList, overwrite_custom_hparams
 from speech_dataset_preprocessing.core.wav import WavData, WavDataList
-from speech_dataset_preprocessing.utils import (GenericList,
-                                                overwrite_custom_hparams)
 from torch import Tensor
 
 

@@ -14,7 +14,7 @@ from speech_dataset_preprocessing.core.ds import (DsDataList,
                                                   mailabs_preprocess,
                                                   thchs_kaldi_preprocess,
                                                   thchs_preprocess)
-from speech_dataset_preprocessing.utils import get_subdir, load_obj, save_obj
+from general_utils import load_obj, save_obj
 from text_utils import SpeakersLogDict
 from unidecode import unidecode as convert_to_ascii
 
@@ -26,12 +26,12 @@ from unidecode import unidecode as convert_to_ascii
 _ds_data_csv = "data.pkl"
 
 
-def get_ds_dir(base_dir: Path, ds_name: str, create: bool = False) -> Path:
-  return get_subdir(base_dir, ds_name, create)
+def get_ds_dir(base_dir: Path, ds_name: str) -> Path:
+  return base_dir / ds_name
 
 
-def get_ds_examples_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "examples", create)
+def get_ds_examples_dir(ds_dir: Path) -> Path:
+  return ds_dir / "examples"
 
 
 def __save_ds_data(ds_dir: Path, result: DsDataList) -> None:
@@ -51,9 +51,11 @@ def _save_ds_speaker_log_json(ds_dir: Path, speakers_log: SpeakersLogDict) -> No
 
 def _save_speaker_examples(ds_dir: Path, examples: DsDataList, logger: Logger) -> None:
   logger.info("Saving examples for each speaker...")
+  example_dir = get_ds_examples_dir(ds_dir)
+  example_dir.mkdir(exist_ok=True, parents=True)
   for i, example in enumerate(examples.items(True), start=1):
     dest_file_name = f"{i}-{str(example.speaker_gender)}-{convert_to_ascii(example.speaker_name)}.wav"
-    dest_path = get_ds_examples_dir(ds_dir, create=True) / dest_file_name
+    dest_path = example_dir / dest_file_name
     copyfile(example.wav_absolute_path, dest_path)
 
 
@@ -107,7 +109,7 @@ def preprocess_custom(base_dir: Path, ds_name: str, path: Path, overwrite: bool)
 
 
 def __preprocess_ds(base_dir: Path, ds_name: str, preprocess_func: Callable[[], PreprocessingResult], overwrite: bool):
-  ds_dir = get_ds_dir(base_dir, ds_name, create=False)
+  ds_dir = get_ds_dir(base_dir, ds_name)
   logger = getLogger(__name__)
   if ds_dir.is_dir() and not overwrite:
     logger.info("Dataset already processed.")
@@ -130,7 +132,7 @@ def __preprocess_ds(base_dir: Path, ds_name: str, preprocess_func: Callable[[], 
 
 def add_speaker_examples(base_dir: str, ds_name: str):
   logger = getLogger(__name__)
-  ds_dir = get_ds_dir(base_dir, ds_name, create=False)
+  ds_dir = get_ds_dir(base_dir, ds_name)
   ds_data = load_ds_data(ds_dir)
   examples = get_speaker_examples(ds_data)
   _save_speaker_examples(ds_dir, examples, logger)

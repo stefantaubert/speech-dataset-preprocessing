@@ -14,7 +14,6 @@ from speech_dataset_preprocessing.app.wav import get_wav_dir, load_wav_data
 from speech_dataset_preprocessing.core.wav import WavData
 from speech_dataset_preprocessing.core.wav import \
     remove_silence_plot as remove_silence_plot_core
-from speech_dataset_preprocessing.utils import get_subdir
 
 
 def _save_orig_plot_if_not_exists(dest_dir: Path, mel) -> Path:
@@ -46,25 +45,25 @@ def _save_comparison(dest_dir: Path, dest_name: str, paths: List[Path]) -> str:
   return path
 
 
-def _get_trim_root_dir(wav_dir: Path) -> Path:
-  return get_subdir(wav_dir, "trim", create=True)
+def __get_trim_root_dir(wav_dir: Path) -> Path:
+  return wav_dir / "trim"
 
 
-def _get_trim_dir(wav_dir: Path, entry: WavData) -> Path:
-  return _get_trim_root_dir(wav_dir) / str(entry.entry_id)
+def __get_trim_dir(wav_dir: Path, entry: WavData) -> Path:
+  return __get_trim_root_dir(wav_dir) / str(entry.entry_id)
 
 
 def remove_silence_plot(base_dir: Path, ds_name: str, wav_name: str, chunk_size: int, threshold_start: float, threshold_end: float, buffer_start_ms: float, buffer_end_ms: float, entry_id: Optional[int] = None) -> None:
   ds_dir = get_ds_dir(base_dir, ds_name)
   wav_dir = get_wav_dir(ds_dir, wav_name)
-  assert os.path.isdir(wav_dir)
+  assert wav_dir.is_dir()
   data = load_wav_data(wav_dir)
   if entry_id is None:
     entry = data.get_random_entry()
   else:
     entry = data.get_entry(entry_id)
 
-  dest_dir = _get_trim_dir(wav_dir, entry)
+  dest_dir = __get_trim_dir(wav_dir, entry)
   dest_dir.mkdir(parents=True, exist_ok=True)
 
   dest_name = f"cs={chunk_size},ts={threshold_start}dBFS,bs={buffer_start_ms}ms,te={threshold_end}dBFS,be={buffer_end_ms}ms"

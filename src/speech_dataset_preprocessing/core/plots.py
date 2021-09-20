@@ -9,7 +9,7 @@ from typing import Callable, Dict, List, Optional
 from audio_utils.mel import TacotronSTFT, TSTFTHParams
 from speech_dataset_preprocessing.core.ds import DsData, DsDataList
 from speech_dataset_preprocessing.core.wav import WavData, WavDataList
-from speech_dataset_preprocessing.utils import overwrite_custom_hparams
+from general_utils import overwrite_custom_hparams
 
 
 def process(data: WavDataList, ds: DsDataList, wav_dir: Path, custom_hparams: Optional[Dict[str, str]], save_callback: Callable[[WavData, DsData], Path]) -> List[Path]:

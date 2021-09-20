@@ -5,6 +5,7 @@ from tempfile import mktemp
 from typing import Dict, List, Optional
 
 from audio_utils.mel import plot_melspec
+from general_utils import get_chunk_name, make_batches_h_v
 from image_utils import stack_images_horizontally, stack_images_vertically
 from matplotlib import pyplot as plt
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
@@ -13,8 +14,6 @@ from speech_dataset_preprocessing.core.ds import DsData
 from speech_dataset_preprocessing.core.plots import process
 from speech_dataset_preprocessing.core.wav import WavData
 from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
-from speech_dataset_preprocessing.utils import (get_chunk_name, get_subdir,
-                                                make_batches_h_v)
 from torch import Tensor
 from tqdm import tqdm
 
@@ -22,12 +21,12 @@ VERTICAL_COUNT = 10
 HORIZONTAL_COUNT = 4
 
 
-def _get_plots_root_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "plots", create)
+def __get_plots_root_dir(ds_dir: Path) -> Path:
+  return ds_dir / "plots"
 
 
-def get_plots_dir(ds_dir: Path, mel_name: str, create: bool = False) -> Path:
-  return get_subdir(_get_plots_root_dir(ds_dir, create), mel_name, create)
+def get_plots_dir(ds_dir: Path, mel_name: str) -> Path:
+  return __get_plots_root_dir(ds_dir) / mel_name
 
 
 def save_plot(dest_dir: Path, data_len: int, wav_entry: WavData, ds_entry: DsData, mel_tensor: Tensor) -> Path:

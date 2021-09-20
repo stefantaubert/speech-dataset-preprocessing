@@ -10,7 +10,7 @@ from speech_dataset_preprocessing.core.final import (FinalDsEntryList,
                                                      get_analysis_df,
                                                      get_final_ds_from_data)
 from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
-from speech_dataset_preprocessing.utils import get_subdir, load_obj, save_obj
+from general_utils import load_obj, save_obj
 
 FINAL_DATA_FILENAME = "data.pkl"
 ANALYSIS_DF_FILENAME = "analysis.csv"
@@ -27,8 +27,8 @@ def __load_final_ds(final_dir: Path) -> FinalDsEntryList:
 
 
 def load_final_ds(base_dir: Path, ds_name: str, final_name: Path) -> FinalDsEntryList:
-  ds_dir = get_ds_dir(base_dir, ds_name, create=False)
-  final_dir = get_final_dir(ds_dir, final_name, create=False)
+  ds_dir = get_ds_dir(base_dir, ds_name)
+  final_dir = get_final_dir(ds_dir, final_name)
   return __load_final_ds(final_dir)
 
 
@@ -38,18 +38,18 @@ def save_analysis_df(final_dir: Path, data: FinalDsEntryList) -> None:
   df.to_csv(path, sep=DEFAULT_CSV_SEPERATOR, header=True, index=False)
 
 
-def _get_final_root_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "final", create)
+def __get_final_root_dir(ds_dir: Path) -> Path:
+  return ds_dir / "final"
 
 
-def get_final_dir(ds_dir: Path, final_name: str, create: bool = False) -> Path:
-  return get_subdir(_get_final_root_dir(ds_dir, create), final_name, create)
+def get_final_dir(ds_dir: Path, final_name: str) -> Path:
+  return __get_final_root_dir(ds_dir) / final_name
 
 
 def merge_to_final_ds(base_dir: Path, ds_name: str, text_name: str, audio_name: str, final_name: str, overwrite: bool) -> FinalDsEntryList:
   logger = getLogger(__name__)
-  ds_dir = get_ds_dir(base_dir, ds_name, create=False)
-  final_dir = get_final_dir(ds_dir, final_name, create=False)
+  ds_dir = get_ds_dir(base_dir, ds_name)
+  final_dir = get_final_dir(ds_dir, final_name)
 
   if final_dir.is_dir() and not overwrite:
     logger.info("Directory already exists!")

@@ -6,7 +6,7 @@ from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.core.mel import MelDataList
 from speech_dataset_preprocessing.core.text import TextDataList
 from speech_dataset_preprocessing.core.wav import WavDataList
-from speech_dataset_preprocessing.utils import GenericList
+from general_utils import GenericList
 from text_utils import Gender, Language, Speaker, SymbolFormat, Symbols
 
 

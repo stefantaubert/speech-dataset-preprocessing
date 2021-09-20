@@ -15,7 +15,7 @@ from numpy.core.fromnumeric import mean
 from scipy.io.wavfile import read, write
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
-from speech_dataset_preprocessing.utils import GenericList, get_chunk_name
+from general_utils import GenericList, get_chunk_name
 from text_utils.types import Speaker
 
 
@@ -27,9 +27,6 @@ class WavData:
   wav_sampling_rate: int
   #size: float
   #is_stereo: bool
-
-  def __repr__(self):
-    return str(self.entry_id)
 
 
 class WavDataList(GenericList[WavData]):
@@ -158,7 +155,8 @@ def stereo_to_mono(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavData
     absolute_orig_wav_path = orig_dir / values.wav_relative_path
     stereo_to_mono_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, values.wav_sampling_rate)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path,
+                       values.wav_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result
@@ -189,7 +187,8 @@ def remove_silence(data: WavDataList, orig_dir: Path, dest_dir: Path, chunk_size
       buffer_end_ms=buffer_end_ms
     )
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, new_duration, values.wav_sampling_rate)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path,
+                       new_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result
@@ -235,7 +234,8 @@ def normalize(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavDataList:
     absolute_orig_wav_path = orig_dir / values.wav_relative_path
     normalize_file(absolute_orig_wav_path, absolute_dest_wav_path)
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, values.wav_sampling_rate)
+    wav_data = WavData(values.entry_id, relative_dest_wav_path,
+                       values.wav_duration, values.wav_sampling_rate)
     result.append(wav_data)
 
   return result

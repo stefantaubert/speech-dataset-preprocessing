@@ -4,22 +4,22 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Callable
 
+from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
 from speech_dataset_preprocessing.core.wav import (WavDataList, log_stats,
                                                    normalize, preprocess,
                                                    remove_silence, resample,
                                                    stereo_to_mono)
-from speech_dataset_preprocessing.utils import get_subdir, load_obj, save_obj
 
 _wav_data_csv = "data.pkl"
 
 
-def _get_wav_root_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "wav", create)
+def _get_wav_root_dir(ds_dir: Path) -> Path:
+  return ds_dir / "wav"
 
 
-def get_wav_dir(ds_dir: Path, wav_name: str, create: bool = False) -> Path:
-  return get_subdir(_get_wav_root_dir(ds_dir, create), wav_name, create)
+def get_wav_dir(ds_dir: Path, wav_name: str) -> Path:
+  return _get_wav_root_dir(ds_dir) / wav_name
 
 
 def load_wav_data(wav_dir: Path) -> WavDataList:

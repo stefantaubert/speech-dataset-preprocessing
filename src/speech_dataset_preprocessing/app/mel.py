@@ -5,25 +5,23 @@ from shutil import rmtree
 from typing import Dict, Optional
 
 import torch
+from general_utils import get_chunk_name, load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir
 from speech_dataset_preprocessing.app.wav import get_wav_dir, load_wav_data
-from speech_dataset_preprocessing.core.mel import MelData, MelDataList, process
+from speech_dataset_preprocessing.core.mel import MelDataList, process
 from speech_dataset_preprocessing.core.wav import WavData
 from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
-from speech_dataset_preprocessing.utils import (get_chunk_name,
-                                                get_pytorch_filename,
-                                                get_subdir, load_obj, save_obj)
 from torch import Tensor
 
 MEL_DATA_CSV = "data.pkl"
 
 
-def _get_mel_root_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "mel", create)
+def __get_mel_root_dir(ds_dir: Path) -> Path:
+  return ds_dir / "mel"
 
 
-def get_mel_dir(ds_dir: Path, mel_name: str, create: bool = False) -> Path:
-  return get_subdir(_get_mel_root_dir(ds_dir, create), mel_name, create)
+def get_mel_dir(ds_dir: Path, mel_name: str) -> Path:
+  return __get_mel_root_dir(ds_dir) / mel_name
 
 
 def load_mel_data(mel_dir: Path) -> MelDataList:
@@ -42,7 +40,7 @@ def save_mel(dest_dir: Path, data_len: int, wav_entry: WavData, mel_tensor: Tens
     chunksize=DEFAULT_PRE_CHUNK_SIZE,
     maximum=data_len - 1
   )
-  relative_dest_mel_path = Path(chunk_dir_name) / get_pytorch_filename(repr(wav_entry))
+  relative_dest_mel_path = Path(chunk_dir_name) / f"{wav_entry.entry_id}.pt"
   absolute_chunk_dir = dest_dir / chunk_dir_name
   absolute_dest_mel_path = dest_dir / relative_dest_mel_path
 

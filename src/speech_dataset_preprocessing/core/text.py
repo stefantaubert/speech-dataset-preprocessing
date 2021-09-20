@@ -4,12 +4,11 @@ from logging import getLogger
 from typing import Dict, List, Optional
 
 import pandas as pd
+from general_utils import GenericList
 from numpy.core.fromnumeric import mean
 from sentence2pronunciation import clear_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
-from speech_dataset_preprocessing.utils import GenericList
-from text_utils import (EngToIPAMode, Language, Speaker, SymbolFormat, Symbols,
-                        SymbolsDict)
+from text_utils import EngToIPAMode, Language, Speaker, SymbolFormat, Symbols
 from text_utils import change_ipa as change_ipa_method
 from text_utils import symbols_to_ipa, text_normalize, text_to_symbols
 

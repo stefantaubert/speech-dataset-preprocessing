@@ -4,14 +4,13 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Callable, Optional
 
+from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
 from speech_dataset_preprocessing.core.text import (SymbolsDict, TextDataList,
                                                     change_ipa, convert_to_ipa,
                                                     log_stats, normalize,
                                                     preprocess)
 from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
-from speech_dataset_preprocessing.utils import (get_subdir, load_obj, save_obj,
-                                                save_txt)
 from text_utils import EngToIPAMode
 
 _text_data_csv = "data.pkl"
@@ -20,12 +19,12 @@ _whole_text_txt = "text.txt"
 ANALYSIS_DF_FILENAME = "analysis.csv"
 
 
-def _get_text_root_dir(ds_dir: Path, create: bool = False) -> Path:
-  return get_subdir(ds_dir, "text", create)
+def __get_text_root_dir(ds_dir: Path) -> Path:
+  return ds_dir / "text"
 
 
-def get_text_dir(ds_dir: Path, text_name: str, create: bool = False) -> Path:
-  return get_subdir(_get_text_root_dir(ds_dir, create), text_name, create)
+def get_text_dir(ds_dir: Path, text_name: str) -> Path:
+  return __get_text_root_dir(ds_dir) / text_name
 
 
 def load_text_symbols_json(text_dir: Path) -> SymbolsDict:
@@ -42,7 +41,7 @@ def save_symbols_stats_df(text_dir: Path, data: TextDataList) -> None:
 def save_whole_text(text_dir: Path, data: TextDataList) -> None:
   path = text_dir / _whole_text_txt
   text = data.get_whole_text()
-  save_txt(path, text)
+  path.write_text(text)
 
 
 def save_analytics_df(text_dir: Path, data: TextDataList) -> None:
