@@ -6,12 +6,11 @@ from typing import Callable, Optional
 
 from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
-from speech_dataset_preprocessing.core.text import (SymbolsDict, TextDataList,
-                                                    change_ipa, convert_to_ipa,
-                                                    log_stats, normalize,
-                                                    preprocess)
+from speech_dataset_preprocessing.core.text import (TextDataList, change_ipa,
+                                                    convert_to_ipa, log_stats,
+                                                    normalize, preprocess)
 from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
-from text_utils import EngToIPAMode
+from text_utils import EngToIPAMode, SymbolsDict
 
 _text_data_csv = "data.pkl"
 ANALYSIS_SYMBOLS_DF_FILENAME = "symbols.csv"
