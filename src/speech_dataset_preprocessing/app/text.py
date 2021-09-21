@@ -7,6 +7,7 @@ from typing import Callable, Optional
 from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
 from speech_dataset_preprocessing.core.text import (TextDataList, change_ipa,
+                                                    change_text,
                                                     convert_to_ipa, log_stats,
                                                     normalize, preprocess)
 from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
@@ -151,7 +152,7 @@ def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, remove_space_around_punctuation: bool, overwrite: bool) -> None:
+def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Changing IPA...")
   operation = partial(
@@ -160,6 +161,15 @@ def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text
     ignore_arcs=ignore_arcs,
     ignore_stress=ignore_stress,
     break_n_thongs=break_n_thongs,
+  )
+  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
+
+
+def text_change_text(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, remove_space_around_punctuation: bool, overwrite: bool) -> None:
+  logger = getLogger(__name__)
+  logger.info("Changing content...")
+  operation = partial(
+    change_text,
     remove_space_around_punctuation=remove_space_around_punctuation,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)

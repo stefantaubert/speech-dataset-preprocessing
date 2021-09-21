@@ -17,6 +17,7 @@ from speech_dataset_preprocessing.app.mel import preprocess_mels
 from speech_dataset_preprocessing.app.plots import plot_mels
 from speech_dataset_preprocessing.app.text import (preprocess_text,
                                                    text_change_ipa,
+                                                   text_change_text,
                                                    text_convert_to_ipa,
                                                    text_normalize)
 from speech_dataset_preprocessing.app.tools import remove_silence_plot
@@ -156,9 +157,17 @@ def init_text_change_ipa_parser(parser: ArgumentParser):
   parser.add_argument('--ignore_arcs', action='store_true')
   parser.add_argument('--ignore_stress', action='store_true')
   parser.add_argument('--break_n_thongs', action='store_true')
-  parser.add_argument('--remove_space_around_punctuation', action='store_true')
   parser.add_argument("--overwrite", action="store_true")
   return text_change_ipa
+
+
+def init_text_change_text_parser(parser: ArgumentParser):
+  parser.add_argument('--ds_name', type=str, required=True)
+  parser.add_argument('--orig_text_name', type=str, required=True)
+  parser.add_argument('--dest_text_name', type=str, required=True)
+  parser.add_argument('--remove_space_around_punctuation', action='store_true')
+  parser.add_argument("--overwrite", action="store_true")
+  return text_change_text
 
 
 def init_preprocess_wavs_parser(parser: ArgumentParser):
@@ -268,6 +277,7 @@ def _init_parser():
 
   _add_parser_to(subparsers, "preprocess-text", init_preprocess_text_parser)
   _add_parser_to(subparsers, "text-normalize", init_text_normalize_parser)
+  _add_parser_to(subparsers, "text-change-text", init_text_change_text_parser)
   _add_parser_to(subparsers, "text-ipa", init_text_convert_to_ipa_parser)
   _add_parser_to(subparsers, "text-change-ipa", init_text_change_ipa_parser)
 

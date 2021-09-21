@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from general_utils import GenericList
 from pandas import DataFrame
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.core.mel import MelDataList
 from speech_dataset_preprocessing.core.text import TextDataList
 from speech_dataset_preprocessing.core.wav import WavDataList
-from general_utils import GenericList
 from text_utils import Gender, Language, Speaker, SymbolFormat, Symbols
 
 
@@ -36,6 +36,7 @@ class FinalDsEntryList(GenericList[FinalDsEntry]):
 def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
   values = [
     (
+      entry.entry_id,
       entry.identifier,
       entry.speaker_name,
       repr(entry.symbols_language),
@@ -54,6 +55,7 @@ def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
 
   columns = [
     "Id",
+    "Identifier",
     "Speaker",
     "Language",
     "Original symbols",

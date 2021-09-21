@@ -11,6 +11,7 @@ from speech_dataset_preprocessing.core.ds import DsDataList
 from text_utils import EngToIPAMode, Language, Speaker, SymbolFormat, Symbols
 from text_utils import change_ipa as change_ipa_method
 from text_utils import symbols_to_ipa, text_normalize, text_to_symbols
+from text_utils.text import change_symbols
 
 
 @dataclass()
@@ -164,7 +165,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
   return result
 
 
-def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, remove_space_around_punctuation: bool) -> TextDataList:
+def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool) -> TextDataList:
   result = TextDataList()
 
   for entry in data.items():
@@ -174,7 +175,27 @@ def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore
       ignore_arcs=ignore_arcs,
       ignore_stress=ignore_stress,
       break_n_thongs=break_n_thongs,
+    )
+
+    text_entry = TextData(
+      entry_id=entry.entry_id,
+      symbols=new_symbols,
+      symbols_format=entry.symbols_format,
+      symbols_language=entry.symbols_language,
+    )
+    result.append(text_entry)
+
+  return result
+
+
+def change_text(data: TextDataList, remove_space_around_punctuation: bool) -> TextDataList:
+  result = TextDataList()
+
+  for entry in data.items():
+    new_symbols = change_symbols(
+      symbols=entry.symbols,
       remove_space_around_punctuation=remove_space_around_punctuation,
+      lang=entry.symbols_language,
     )
 
     text_entry = TextData(
