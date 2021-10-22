@@ -141,18 +141,18 @@ def text_normalize(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, consider_ipa_annotations: Optional[bool], mode: Optional[EngToIPAMode], overwrite: bool) -> None:
+def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode], overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Converting text to IPA...")
   operation = partial(
     convert_to_ipa,
     mode=mode,
-    consider_ipa_annotations=consider_ipa_annotations,
+    consider_annotations=consider_annotations,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 
 
-def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, overwrite: bool) -> None:
+def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, build_n_thongs: bool, overwrite: bool) -> None:
   logger = getLogger(__name__)
   logger.info("Changing IPA...")
   operation = partial(
@@ -161,6 +161,7 @@ def text_change_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text
     ignore_arcs=ignore_arcs,
     ignore_stress=ignore_stress,
     break_n_thongs=break_n_thongs,
+    build_n_thongs=build_n_thongs,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 

@@ -11,13 +11,13 @@ from speech_dataset_parser import (PreData, PreDataList, download_ljs,
                                    parse_thchs_kaldi)
 from text_utils import (Gender, Language, Speaker, Speakers, SpeakersLogDict,
                         SymbolFormat, Symbols, get_format_from_str,
-                        get_lang_from_str, text_to_symbols)
+                        get_lang_from_str)
 
 
 @dataclass()
 class DsData:
   entry_id: int
-  identifier: str
+  basename: str
   symbols: Symbols
   symbols_format: SymbolFormat
   symbols_language: Language
@@ -41,28 +41,29 @@ def _preprocess_core(dir_path: Path, auto_dl: bool, dl_func: Optional[Callable[[
     dl_func(dir_path)
 
   data = parse_func(dir_path)
+  data_identifiers_are_unique = len(set(x.identifier for x in data.items())) == len(data)
+  assert data_identifiers_are_unique
+
   speakers_log = _get_all_speakers(data)
 
-  ds_data = DsDataList([get_dsdata_from_predata(predata, i)
-                        for i, predata in enumerate(data.items())])
+  ds_data = DsDataList([get_dsdata_from_predata(dir_path, predata)
+                        for predata in data.items()])
+  for entry in ds_data.items():
+    assert entry.wav_absolute_path.is_file()
 
   return speakers_log, ds_data
 
 
-def get_dsdata_from_predata(predata: PreData, i: int) -> DsData:
-  text_language = get_lang_from_str(str(predata.text_language))
-  text_format = get_format_from_str(str(predata.text_format))
+def get_dsdata_from_predata(dir_path: Path, predata: PreData) -> DsData:
+  text_language = get_lang_from_str(str(predata.symbols_language))
+  text_format = get_format_from_str(str(predata.symbols_format))
   res = DsData(
-    entry_id=i,
-    identifier=predata.identifier,
-    symbols=text_to_symbols(
-      text=predata.text,
-      lang=text_language,
-      text_format=text_format,
-    ),
+    entry_id=predata.identifier,
+    basename=predata.basename,
+    symbols=predata.symbols,
     symbols_format=text_format,
     symbols_language=text_language,
-    wav_absolute_path=predata.wav_path,
+    wav_absolute_path=dir_path / predata.relative_audio_path,
     speaker_name=predata.speaker_name,
     speaker_gender=predata.speaker_gender,
   )

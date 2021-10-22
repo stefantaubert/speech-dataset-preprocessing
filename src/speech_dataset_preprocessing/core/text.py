@@ -141,7 +141,7 @@ def normalize(data: TextDataList) -> TextDataList:
   return result
 
 
-def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool], mode: Optional[EngToIPAMode]) -> TextDataList:
+def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode]) -> TextDataList:
   result = TextDataList()
 
   for entry in data.items(True):
@@ -150,7 +150,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
       lang=entry.symbols_language,
       symbols_format=entry.symbols_format,
       mode=mode,
-      consider_ipa_annotations=consider_ipa_annotations,
+      consider_annotations=consider_annotations,
     )
     text_entry = TextData(
       entry_id=entry.entry_id,
@@ -165,7 +165,7 @@ def convert_to_ipa(data: TextDataList, consider_ipa_annotations: Optional[bool],
   return result
 
 
-def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool) -> TextDataList:
+def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, build_n_thongs: bool) -> TextDataList:
   result = TextDataList()
 
   for entry in data.items():
@@ -175,6 +175,7 @@ def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore
       ignore_arcs=ignore_arcs,
       ignore_stress=ignore_stress,
       break_n_thongs=break_n_thongs,
+      build_n_thongs=build_n_thongs,
     )
 
     text_entry = TextData(

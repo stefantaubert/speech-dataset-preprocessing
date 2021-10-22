@@ -13,7 +13,7 @@ from text_utils import Gender, Language, Speaker, SymbolFormat, Symbols
 @dataclass
 class FinalDsEntry():
   entry_id: int
-  identifier: str
+  basename: str
   speaker_name: Speaker
   speaker_gender: Gender
   symbols_language: Language
@@ -37,7 +37,7 @@ def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
   values = [
     (
       entry.entry_id,
-      entry.identifier,
+      entry.basename,
       entry.speaker_name,
       repr(entry.symbols_language),
       ''.join(entry.symbols_original),
@@ -55,7 +55,7 @@ def get_analysis_df(data: FinalDsEntryList) -> DataFrame:
 
   columns = [
     "Id",
-    "Identifier",
+    "Basename",
     "Speaker",
     "Language",
     "Original symbols",
@@ -82,7 +82,7 @@ def get_final_ds_from_data(ds_data: DsDataList, text_data: TextDataList, wav_dat
 
     new_entry = FinalDsEntry(
       entry_id=ds_data_entry.entry_id,
-      identifier=ds_data_entry.identifier,
+      basename=ds_data_entry.basename,
       speaker_gender=ds_data_entry.speaker_gender,
       speaker_name=ds_data_entry.speaker_name,
       symbols_language=ds_data_entry.symbols_language,

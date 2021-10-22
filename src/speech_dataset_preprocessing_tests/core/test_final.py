@@ -13,7 +13,7 @@ from text_utils.symbol_format import SymbolFormat
 def test_get_final_ds_from_data():
   ds_data = DsData(
     entry_id=1,
-    identifier="identifier",
+    basename="basename",
     speaker_gender=Gender.FEMALE,
     speaker_name="Speaker 1",
     symbols=("a", "b",),
@@ -54,7 +54,7 @@ def test_get_final_ds_from_data():
   assert len(result) == 1
   result_first_entry = result.items()[0]
   assert result_first_entry.entry_id == 1
-  assert result_first_entry.identifier == "identifier"
+  assert result_first_entry.basename == "basename"
   assert result_first_entry.speaker_gender == Gender.FEMALE
   assert result_first_entry.speaker_name == "Speaker 1"
   assert result_first_entry.symbols_format == SymbolFormat.PHONEMES_IPA
