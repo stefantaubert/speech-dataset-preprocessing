@@ -168,7 +168,7 @@ def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mod
 def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore_stress: bool, break_n_thongs: bool, build_n_thongs: bool) -> TextDataList:
   result = TextDataList()
 
-  for entry in data.items():
+  for entry in data.items(True):
     new_symbols = change_ipa_method(
       symbols=entry.symbols,
       ignore_tones=ignore_tones,
@@ -176,6 +176,7 @@ def change_ipa(data: TextDataList, ignore_tones: bool, ignore_arcs: bool, ignore
       ignore_stress=ignore_stress,
       break_n_thongs=break_n_thongs,
       build_n_thongs=build_n_thongs,
+      language=entry.symbols_language,
     )
 
     text_entry = TextData(
