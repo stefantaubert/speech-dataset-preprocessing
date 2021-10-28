@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 from general_utils import GenericList
 from numpy.core.fromnumeric import mean
-from sentence2pronunciation import clear_cache
+from sentence2pronunciation.lookup_cache import get_empty_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
 from text_utils import EngToIPAMode, Language, Speaker, SymbolFormat, Symbols
 from text_utils import change_ipa as change_ipa_method
@@ -143,6 +143,7 @@ def normalize(data: TextDataList) -> TextDataList:
 
 def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode]) -> TextDataList:
   result = TextDataList()
+  cache = get_empty_cache()
 
   for entry in data.items(True):
     new_symbols, new_format = symbols_to_ipa(
@@ -151,6 +152,7 @@ def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mod
       symbols_format=entry.symbols_format,
       mode=mode,
       consider_annotations=consider_annotations,
+      cache=cache,
     )
     text_entry = TextData(
       entry_id=entry.entry_id,
@@ -159,8 +161,6 @@ def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mod
       symbols_language=entry.symbols_language,
     )
     result.append(text_entry)
-
-  clear_cache()
 
   return result
 
