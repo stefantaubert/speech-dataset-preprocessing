@@ -1,5 +1,6 @@
 from functools import partial
 from logging import getLogger
+from multiprocessing import cpu_count
 from pathlib import Path
 from shutil import rmtree
 from typing import Dict, Optional
@@ -72,6 +73,6 @@ def preprocess_mels(base_dir: Path, ds_name: str, wav_name: str, custom_hparams:
   mel_dir.mkdir(exist_ok=False, parents=True)
 
   save_callback = partial(save_mel, dest_dir=mel_dir, data_len=len(data))
-  mel_data = process(data, wav_dir, custom_hparams, save_callback)
+  mel_data = process(data, wav_dir, custom_hparams, save_callback, n_jobs=cpu_count() - 1)
   save_mel_data(mel_dir, mel_data)
   logger.info("Done.")

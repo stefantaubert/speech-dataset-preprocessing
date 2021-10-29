@@ -1,5 +1,6 @@
 from functools import partial
 from logging import getLogger
+from multiprocessing import cpu_count
 from pathlib import Path
 from shutil import rmtree
 from typing import Callable, Optional
@@ -148,6 +149,7 @@ def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_
     convert_to_ipa,
     mode=mode,
     consider_annotations=consider_annotations,
+    n_jobs=cpu_count() - 1,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 

@@ -1,5 +1,6 @@
 from functools import partial
 from logging import getLogger
+from multiprocessing import cpu_count
 from pathlib import Path
 from shutil import rmtree
 from typing import Callable
@@ -50,7 +51,7 @@ def preprocess_wavs(base_dir: Path, ds_name: str, wav_name: str, overwrite: bool
     rmtree(dest_wav_dir)
   dest_wav_dir.mkdir(exist_ok=False, parents=True)
 
-  wav_data = preprocess(data, dest_wav_dir)
+  wav_data = preprocess(data, dest_wav_dir, n_jobs=cpu_count() - 1)
   save_wav_data(dest_wav_dir, wav_data)
   ds_data = load_ds_data(ds_dir)
   log_stats(ds_data, wav_data)
@@ -77,7 +78,7 @@ def wavs_normalize(base_dir: Path, ds_name: str, orig_wav_name: str, dest_wav_na
 def wavs_resample(base_dir: Path, ds_name: str, orig_wav_name: str, dest_wav_name: str, rate: int, overwrite: bool = False) -> None:
   logger = getLogger(__name__)
   logger.info("Resampling wavs...")
-  op = partial(resample, new_rate=rate)
+  op = partial(resample, new_rate=rate, n_jobs=cpu_count() - 1)
   __wav_op(base_dir, ds_name, orig_wav_name, dest_wav_name, op, overwrite)
 
 

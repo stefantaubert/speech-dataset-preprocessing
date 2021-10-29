@@ -1,17 +1,21 @@
 from collections import Counter
+from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass
+from functools import partial
 from logging import getLogger
 from typing import Dict, List, Optional
 
 import pandas as pd
 from general_utils import GenericList
 from numpy.core.fromnumeric import mean
-from sentence2pronunciation.lookup_cache import get_empty_cache
+from sentence2pronunciation.lookup_cache import LookupCache, get_empty_cache
 from speech_dataset_preprocessing.core.ds import DsDataList
 from text_utils import EngToIPAMode, Language, Speaker, SymbolFormat, Symbols
 from text_utils import change_ipa as change_ipa_method
 from text_utils import symbols_to_ipa, text_normalize, text_to_symbols
+from text_utils.pronunciation.main import prepare_symbols_to_ipa
 from text_utils.text import change_symbols
+from tqdm import tqdm
 
 
 @dataclass()
@@ -141,27 +145,38 @@ def normalize(data: TextDataList) -> TextDataList:
   return result
 
 
-def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode]) -> TextDataList:
-  result = TextDataList()
+def convert_entry_to_ipa(entry: TextData, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode], cache: LookupCache) -> TextData:
+  new_symbols, new_format = symbols_to_ipa(
+    symbols=entry.symbols,
+    lang=entry.symbols_language,
+    symbols_format=entry.symbols_format,
+    mode=mode,
+    consider_annotations=consider_annotations,
+    cache=cache,
+  )
+  text_entry = TextData(
+    entry_id=entry.entry_id,
+    symbols=new_symbols,
+    symbols_format=new_format,
+    symbols_language=entry.symbols_language,
+  )
+  return text_entry
+
+
+def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mode: Optional[EngToIPAMode], n_jobs: int) -> TextDataList:
+  if len(data) == 0:
+    return data
+  # first_entry = data.items()[0]
+  # prepare_symbols_to_ipa(first_entry.symbols_format, first_entry.symbols_language, mode)
+  # method = partial(convert_entry_to_ipa, consider_annotations=consider_annotations,
+  #                  mode=mode, cache=cache)
+  # with ThreadPoolExecutor(max_workers=n_jobs) as ex:
+  #   result = TextDataList(tqdm(ex.map(method, data.items()), total=len(data)))
   cache = get_empty_cache()
-
-  for entry in data.items(True):
-    new_symbols, new_format = symbols_to_ipa(
-      symbols=entry.symbols,
-      lang=entry.symbols_language,
-      symbols_format=entry.symbols_format,
-      mode=mode,
-      consider_annotations=consider_annotations,
-      cache=cache,
-    )
-    text_entry = TextData(
-      entry_id=entry.entry_id,
-      symbols=new_symbols,
-      symbols_format=new_format,
-      symbols_language=entry.symbols_language,
-    )
-    result.append(text_entry)
-
+  result = TextDataList(
+    convert_entry_to_ipa(entry, consider_annotations, mode, cache)
+    for entry in data.items_tqdm()
+  )
   return result
 
 

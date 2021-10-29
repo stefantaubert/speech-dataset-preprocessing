@@ -2,8 +2,11 @@
 calculate wav duration and sampling rate
 """
 
+from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass
+from functools import partial
 from logging import getLogger
+from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Dict, List
 
@@ -11,12 +14,13 @@ import pandas as pd
 from audio_utils import (get_duration_s, normalize_file, remove_silence_file,
                          stereo_to_mono_file, upsample_file)
 from audio_utils.mel import TacotronSTFT, TSTFTHParams
+from general_utils import GenericList, get_chunk_name
 from numpy.core.fromnumeric import mean
 from scipy.io.wavfile import read, write
 from speech_dataset_preprocessing.core.ds import DsDataList
 from speech_dataset_preprocessing.globals import DEFAULT_PRE_CHUNK_SIZE
-from general_utils import GenericList, get_chunk_name
 from text_utils.types import Speaker
+from tqdm import tqdm
 
 
 @dataclass()
@@ -89,50 +93,70 @@ def log_stats(ds_data: DsDataList, wav_data: WavDataList):
     logger.info(stats_csv)
 
 
-def preprocess(data: DsDataList, dest_dir: Path) -> WavDataList:
-  result = WavDataList()
+def preprocess_entry(entry: WavData, dest_dir: Path, entries_count: int) -> WavData:
+  sampling_rate, wav = read(entry.wav_absolute_path)
+  duration = get_duration_s(wav, sampling_rate)
+  chunk_dir_name = get_chunk_name(
+    i=entry.entry_id,
+    chunksize=DEFAULT_PRE_CHUNK_SIZE,
+    maximum=entries_count - 1
+  )
 
-  for values in data.items(True):
-    sampling_rate, wav = read(values.wav_absolute_path)
-    duration = get_duration_s(wav, sampling_rate)
+  absolute_chunk_dir = dest_dir / chunk_dir_name
+  absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+  relative_dest_wav_path = Path(chunk_dir_name) / f"{entry.entry_id}.wav"
+  absolute_dest_wav_path = dest_dir / relative_dest_wav_path
+  write(absolute_dest_wav_path, sampling_rate, wav)
 
-    chunk_dir_name = get_chunk_name(
-      i=values.entry_id,
-      chunksize=DEFAULT_PRE_CHUNK_SIZE,
-      maximum=len(data) - 1
-    )
-    absolute_chunk_dir = dest_dir / chunk_dir_name
-    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
-    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
-    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
-    write(absolute_dest_wav_path, sampling_rate, wav)
+  wav_data = WavData(entry.entry_id, relative_dest_wav_path, duration, sampling_rate)
+  return wav_data
 
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, duration, sampling_rate)
-    result.append(wav_data)
+
+def preprocess(data: DsDataList, dest_dir: Path, n_jobs: int) -> WavDataList:
+  assert dest_dir.is_dir()
+  mt_method = partial(
+    preprocess_entry,
+    dest_dir=dest_dir,
+    entries_count=len(data),
+  )
+
+  with ThreadPoolExecutor(max_workers=n_jobs) as ex:
+    result = WavDataList(tqdm(ex.map(mt_method, data.items()), total=len(data)))
 
   return result
 
 
-def resample(data: WavDataList, orig_dir: Path, dest_dir: Path, new_rate: int) -> WavDataList:
-  assert dest_dir.is_dir() and dest_dir.exists()
-  result = WavDataList()
+def resample_entry(entry: WavData, orig_dir: Path, dest_dir: Path, new_rate: int, entries_count: int) -> WavData:
+  assert dest_dir.is_dir()
+  chunk_dir_name = get_chunk_name(
+    i=entry.entry_id,
+    chunksize=DEFAULT_PRE_CHUNK_SIZE,
+    maximum=entries_count - 1
+  )
+  absolute_chunk_dir = dest_dir / chunk_dir_name
+  absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
+  relative_dest_wav_path = Path(chunk_dir_name) / f"{entry.entry_id}.wav"
+  absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
-  for values in data.items(True):
-    chunk_dir_name = get_chunk_name(
-      i=values.entry_id,
-      chunksize=DEFAULT_PRE_CHUNK_SIZE,
-      maximum=len(data) - 1
-    )
-    absolute_chunk_dir = dest_dir / chunk_dir_name
-    absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
-    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
-    absolute_dest_wav_path = dest_dir / relative_dest_wav_path
+  # TODO assert not is_overamp
+  absolute_orig_wav_path = orig_dir / entry.wav_relative_path
+  upsample_file(absolute_orig_wav_path, absolute_dest_wav_path, new_rate)
+  wav_data = WavData(entry.entry_id, relative_dest_wav_path, entry.wav_duration, new_rate)
+  return wav_data
 
-    # TODO assert not is_overamp
-    absolute_orig_wav_path = orig_dir / values.wav_relative_path
-    upsample_file(absolute_orig_wav_path, absolute_dest_wav_path, new_rate)
-    wav_data = WavData(values.entry_id, relative_dest_wav_path, values.wav_duration, new_rate)
-    result.append(wav_data)
+
+def resample(data: WavDataList, orig_dir: Path, dest_dir: Path, new_rate: int, n_jobs: int) -> WavDataList:
+  assert dest_dir.is_dir()
+  mt_method = partial(
+    resample_entry,
+    orig_dir=orig_dir,
+    dest_dir=dest_dir,
+    entries_count=len(data),
+    new_rate=new_rate,
+  )
+
+  with ThreadPoolExecutor(max_workers=n_jobs) as ex:
+    result = WavDataList(tqdm(ex.map(mt_method, data.items()), total=len(data)))
 
   return result
 
@@ -148,7 +172,7 @@ def stereo_to_mono(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavData
     )
     absolute_chunk_dir = dest_dir / chunk_dir_name
     absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
-    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values.entry_id}.wav"
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     # todo assert not is_overamp
@@ -173,7 +197,7 @@ def remove_silence(data: WavDataList, orig_dir: Path, dest_dir: Path, chunk_size
     )
     absolute_chunk_dir = dest_dir / chunk_dir_name
     absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
-    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values.entry_id}.wav"
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     absolute_orig_wav_path = orig_dir / values.wav_relative_path
@@ -228,7 +252,7 @@ def normalize(data: WavDataList, orig_dir: Path, dest_dir: Path) -> WavDataList:
     )
     absolute_chunk_dir = dest_dir / chunk_dir_name
     absolute_chunk_dir.mkdir(parents=True, exist_ok=True)
-    relative_dest_wav_path = Path(chunk_dir_name) / f"{values!r}.wav"
+    relative_dest_wav_path = Path(chunk_dir_name) / f"{values.entry_id}.wav"
     absolute_dest_wav_path = dest_dir / relative_dest_wav_path
 
     absolute_orig_wav_path = orig_dir / values.wav_relative_path
