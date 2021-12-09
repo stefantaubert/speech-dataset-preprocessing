@@ -9,7 +9,7 @@ from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.app.ds import get_ds_dir, load_ds_data
 from speech_dataset_preprocessing.core.text import (TextDataList, change_ipa,
                                                     change_text,
-                                                    convert_to_ipa, log_stats,
+                                                    convert_to_ipa, log_stats, map_to_ipa,
                                                     normalize, preprocess)
 from speech_dataset_preprocessing.globals import DEFAULT_CSV_SEPERATOR
 from text_utils import EngToIPAMode, SymbolsDict
@@ -150,6 +150,14 @@ def text_convert_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_
     mode=mode,
     consider_annotations=consider_annotations,
     n_jobs=cpu_count() - 1,
+  )
+  _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
+
+def text_map_to_ipa(base_dir: Path, ds_name: str, orig_text_name: str, dest_text_name: str, overwrite: bool) -> None:
+  logger = getLogger(__name__)
+  logger.info("Mapping text from ARPA to IPA...")
+  operation = partial(
+    map_to_ipa,
   )
   _text_op(base_dir, ds_name, orig_text_name, dest_text_name, operation, overwrite)
 

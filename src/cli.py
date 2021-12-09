@@ -19,6 +19,7 @@ from speech_dataset_preprocessing.app.text import (preprocess_text,
                                                    text_change_ipa,
                                                    text_change_text,
                                                    text_convert_to_ipa,
+                                                   text_map_to_ipa,
                                                    text_normalize)
 from speech_dataset_preprocessing.app.tools import remove_silence_plot
 from speech_dataset_preprocessing.app.wav import (preprocess_wavs,
@@ -171,6 +172,14 @@ def init_text_change_text_parser(parser: ArgumentParser):
   return text_change_text
 
 
+def init_text_map_to_ipa_parser(parser: ArgumentParser):
+  parser.add_argument('--ds_name', type=str, required=True)
+  parser.add_argument('--orig_text_name', type=str, required=True)
+  parser.add_argument('--dest_text_name', type=str, required=True)
+  parser.add_argument("--overwrite", action="store_true")
+  return text_map_to_ipa
+
+
 def init_preprocess_wavs_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--wav_name', type=str, required=True)
@@ -281,6 +290,7 @@ def _init_parser():
   _add_parser_to(subparsers, "text-change-text", init_text_change_text_parser)
   _add_parser_to(subparsers, "text-ipa", init_text_convert_to_ipa_parser)
   _add_parser_to(subparsers, "text-change-ipa", init_text_change_ipa_parser)
+  _add_parser_to(subparsers, "text-arpa-to-ipa", init_text_map_to_ipa_parser)
 
   _add_parser_to(subparsers, "preprocess-mels", init_preprocess_mels_parser)
   # is also possible without preprocess mels first

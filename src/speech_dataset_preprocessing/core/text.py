@@ -13,6 +13,7 @@ from speech_dataset_preprocessing.core.ds import DsDataList
 from text_utils import EngToIPAMode, Language, Speaker, SymbolFormat, Symbols
 from text_utils import change_ipa as change_ipa_method
 from text_utils import symbols_to_ipa, text_normalize, text_to_symbols
+from text_utils.pronunciation.ARPAToIPAMapper import symbols_map_arpa_to_ipa
 from text_utils.pronunciation.main import prepare_symbols_to_ipa
 from text_utils.text import change_symbols
 from tqdm import tqdm
@@ -177,6 +178,28 @@ def convert_to_ipa(data: TextDataList, consider_annotations: Optional[bool], mod
     convert_entry_to_ipa(entry, consider_annotations, mode, cache)
     for entry in data.items_tqdm()
   )
+  return result
+
+
+def map_to_ipa(data: TextDataList) -> TextDataList:
+  result = TextDataList()
+
+  for entry in data.items(True):
+    new_symbols = symbols_map_arpa_to_ipa(
+      arpa_symbols=entry.symbols,
+      ignore=set(),
+      replace_unknown=False,
+      replace_unknown_with=None,
+    )
+
+    text_entry = TextData(
+      entry_id=entry.entry_id,
+      symbols=new_symbols,
+      symbols_format=entry.symbols_format,
+      symbols_language=entry.symbols_language,
+    )
+
+    result.append(text_entry)
   return result
 
 
