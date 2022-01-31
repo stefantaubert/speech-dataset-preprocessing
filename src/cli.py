@@ -190,7 +190,6 @@ def init_preprocess_wavs_parser(parser: ArgumentParser):
 def init_wavs_stats_parser(parser: ArgumentParser):
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--wav_name', type=str, required=True)
-  parser.add_argument("--overwrite", action="store_true")
   return wavs_stats
 
 

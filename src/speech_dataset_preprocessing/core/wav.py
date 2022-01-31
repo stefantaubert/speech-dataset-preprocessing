@@ -90,7 +90,7 @@ def log_stats(ds_data: DsDataList, wav_data: WavDataList):
     'display.width', None,
     'display.precision', 4,
   ):
-    logger.info(stats_csv)
+    print(stats_csv)
 
 
 def preprocess_entry(entry: WavData, dest_dir: Path, entries_count: int) -> WavData:
