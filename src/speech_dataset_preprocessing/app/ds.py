@@ -4,18 +4,18 @@ from pathlib import Path
 from shutil import copyfile, rmtree
 from typing import Callable
 
+from general_utils import load_obj, save_obj
 from speech_dataset_preprocessing.core.ds import (DsDataList,
                                                   PreprocessingResult,
                                                   arctic_preprocess,
-                                                  custom_preprocess,
+                                                  generic_preprocess,
                                                   get_speaker_examples,
                                                   libritts_preprocess,
                                                   ljs_preprocess,
                                                   mailabs_preprocess,
                                                   thchs_kaldi_preprocess,
                                                   thchs_preprocess)
-from general_utils import load_obj, save_obj
-from text_utils import SpeakersLogDict
+from text_utils import SpeakersLogDict, SymbolFormat
 from unidecode import unidecode as convert_to_ascii
 
 # don't do preprocessing here because inconsistent with mels because it is not always usefull to calc mels instand
@@ -101,10 +101,16 @@ def preprocess_arctic(base_dir: Path, ds_name: str, path: Path, overwrite: bool)
   __preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite)
 
 
-def preprocess_custom(base_dir: Path, ds_name: str, path: Path, overwrite: bool):
+def preprocess_generic(base_dir: Path, ds_name: str, path: Path, tier_name: str, n_digits: int, symbols_format: SymbolFormat, overwrite: bool):
   logger = getLogger(__name__)
-  logger.info("Preprocessing custom dataset...")
-  preprocess_func = partial(custom_preprocess, dir_path=path)
+  logger.info("Preprocessing generic dataset...")
+  preprocess_func = partial(
+    generic_preprocess,
+    directory=path,
+    tier_name=tier_name,
+    n_digits=n_digits,
+    symbols_format=symbols_format
+  )
   __preprocess_ds(base_dir, ds_name, preprocess_func, overwrite=overwrite)
 
 
@@ -117,7 +123,7 @@ def __preprocess_ds(base_dir: Path, ds_name: str, preprocess_func: Callable[[], 
 
   logger.info("Reading data...")
   speakers_log, ds_data = preprocess_func()
-  if ds_dir.is_dir():
+  if ds_dir.exists():
     assert overwrite
     logger.info("Overwriting existing data.")
     rmtree(ds_dir)

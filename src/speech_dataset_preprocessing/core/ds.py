@@ -6,9 +6,10 @@ from typing import Callable, Optional, Set, Tuple
 from general_utils import GenericList
 from speech_dataset_parser import (PreData, PreDataList, download_ljs,
                                    download_thchs, download_thchs_kaldi,
-                                   parse_arctic, parse_custom, parse_libritts,
-                                   parse_ljs, parse_mailabs, parse_thchs,
+                                   parse_arctic, parse_libritts, parse_ljs,
+                                   parse_mailabs, parse_thchs,
                                    parse_thchs_kaldi)
+from speech_dataset_parser_api import parse_directory
 from text_utils import (Gender, Language, Speaker, Speakers, SpeakersLogDict,
                         SymbolFormat, Symbols, get_format_from_str,
                         get_lang_from_str)
@@ -22,7 +23,7 @@ class DsData:
   symbols_format: SymbolFormat
   symbols_language: Language
   speaker_name: Speaker
-  speaker_gender: Gender
+  speaker_gender: Optional[Gender]
   wav_absolute_path: Path
 
   def __repr__(self):
@@ -52,6 +53,50 @@ def _preprocess_core(dir_path: Path, auto_dl: bool, dl_func: Optional[Callable[[
     assert entry.wav_absolute_path.is_file()
 
   return speakers_log, ds_data
+
+
+def generic_preprocess(directory: Path, tier_name: str, n_digits: int, symbols_format: SymbolFormat) -> PreprocessingResult:
+  result = DsDataList()
+  entries = parse_directory(directory, tier_name, n_digits)
+  for entry_nr, entry in enumerate(entries):
+    data_entry = DsData(
+      entry_id=entry_nr,
+      basename=entry.audio_file_rel.stem,
+      symbols=entry.symbols,
+      symbols_format=symbols_format,
+      symbols_language=get_lang_from_iso(entry.symbols_language),
+      wav_absolute_path=directory / entry.audio_file_rel,
+      speaker_name=entry.speaker_name,
+      speaker_gender=get_gender_from_iso(entry.speaker_gender),
+    )
+    assert data_entry.wav_absolute_path.is_file()
+    result.append(data_entry)
+
+  all_speakers: Speakers = (x.speaker_name for x in result.items())
+  all_speakers_counter = Counter(all_speakers)
+  speakers_log = SpeakersLogDict.fromcounter(all_speakers_counter)
+
+  return speakers_log, result
+
+
+def get_gender_from_iso(gender_iso: int) -> Optional[Gender]:
+  if gender_iso in {0, 9}:
+    return None
+  if gender_iso == 1:
+    return Gender.MALE
+  if gender_iso == 2:
+    return Gender.FEMALE
+  assert False
+
+
+def get_lang_from_iso(lang_iso: str) -> Language:
+  if lang_iso == "eng":
+    return Language.ENG
+  if lang_iso == "deu":
+    return Language.GER
+  if lang_iso == "zho":
+    return Language.CHN
+  assert False
 
 
 def get_dsdata_from_predata(dir_path: Path, predata: PreData) -> DsData:
@@ -86,15 +131,6 @@ def thchs_preprocess(dir_path: Path, auto_dl: bool) -> PreprocessingResult:
     auto_dl=auto_dl,
     dl_func=download_thchs,
     parse_func=parse_thchs,
-  )
-
-
-def custom_preprocess(dir_path: Path) -> PreprocessingResult:
-  return _preprocess_core(
-    dir_path=dir_path,
-    auto_dl=False,
-    dl_func=None,
-    parse_func=parse_custom,
   )
 
 
