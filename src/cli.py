@@ -42,8 +42,8 @@ def init_preprocess_generic_parser(parser: ArgumentParser):
   parser.add_argument('--path', type=Path, required=True, help='dataset directory')
   parser.add_argument('--ds_name', type=str, required=True)
   parser.add_argument('--tier_name', type=str, default='Symbols')
-  parser.add_argument('--n_digits', type=int, required=True, default=16, choices=range(17))
-  parser.add_argument('--symbol_format', choices=SymbolFormat,
+  parser.add_argument('--n_digits', type=int, default=16, choices=range(17))
+  parser.add_argument('--symbols_format', choices=SymbolFormat,
                       type=SymbolFormat.__getitem__, default=SymbolFormat.PHONEMES_ARPA)
   parser.add_argument("--overwrite", action="store_true")
   return preprocess_generic

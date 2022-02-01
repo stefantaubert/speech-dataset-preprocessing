@@ -28,7 +28,7 @@ matplotlib = "*"
 tqdm = "*"
 numpy = "*"
 Unidecode = "*"
-torch = "==1.7.1"
+torch = "*"
 
 [requires]
 python_version = "3.8"
