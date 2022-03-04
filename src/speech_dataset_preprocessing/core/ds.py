@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Callable, Optional, Set, Tuple
 
 from general_utils import GenericList
-from speech_dataset_parser import (PreData, PreDataList, download_ljs,
-                                   download_thchs, download_thchs_kaldi,
-                                   parse_arctic, parse_libritts, parse_ljs,
-                                   parse_mailabs, parse_thchs,
-                                   parse_thchs_kaldi)
 from speech_dataset_parser_api import parse_directory
+from speech_dataset_parser_old import (PreData, PreDataList, download_ljs,
+                                       download_thchs, download_thchs_kaldi,
+                                       parse_arctic, parse_libritts, parse_ljs,
+                                       parse_mailabs, parse_thchs,
+                                       parse_thchs_kaldi)
 from text_utils import (Gender, Language, Speaker, Speakers, SpeakersLogDict,
                         SymbolFormat, Symbols, get_format_from_str,
                         get_lang_from_str)
